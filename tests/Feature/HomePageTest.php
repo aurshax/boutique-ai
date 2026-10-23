@@ -19,7 +19,7 @@ class HomePageTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('Welcome')
+                ->component('home/HomePage')
                 ->has('styles', 4)
                 ->where('styles.0.name', 'Classic')
                 ->where('styles.0.looks_count', 2)

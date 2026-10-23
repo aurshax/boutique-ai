@@ -26,7 +26,7 @@ Route::prefix('try-on/requests')->name('try-on.requests.')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::inertia('dashboard', 'dashboard/DashboardPage')->name('dashboard');
 });
 
 require __DIR__.'/settings.php';

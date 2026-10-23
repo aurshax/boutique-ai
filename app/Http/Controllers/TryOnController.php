@@ -65,12 +65,17 @@ class TryOnController extends Controller
                 ])->values(),
             ]);
 
-        return Inertia::render('TryOn/Create', [
+        return Inertia::render('try-on/TryOnPage', [
             'styles' => $styles,
             'sizes' => CreateTryOnRequest::SIZES,
             'provider' => config('tryon.provider'),
             'requiresApiKey' => config('tryon.provider') === 'openai',
             'estimateUsd' => config('tryon.estimate_usd'),
+            // Brauzerdagi oldindan tekshiruv uchun (features/upload-photo). Haqiqiy tekshiruv — CreateTryOnRequest.
+            'upload' => [
+                'allowed_mimes' => config('tryon.upload.allowed_mimes'),
+                'max_kb' => (int) config('tryon.upload.max_kb'),
+            ],
         ]);
     }
 

@@ -34,10 +34,12 @@ class TryOnHttpTest extends TestCase
         $this->get('/try-on')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('TryOn/Create')
+                ->component('try-on/TryOnPage')
                 ->has('styles', 4)
                 ->where('requiresApiKey', false)
-                ->has('styles.0.looks.0.products'));
+                ->has('styles.0.looks.0.products')
+                ->where('upload.max_kb', 10240)
+                ->has('upload.allowed_mimes'));
     }
 
     public function test_security_headers_are_present(): void

@@ -9,7 +9,10 @@ import { defineConfig, lazyPlugins } from 'vite-plus';
 export default defineConfig({
     plugins: lazyPlugins(() => [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.ts'],
+            input: [
+                'resources/js/app/styles/main.css',
+                'resources/js/app/main.ts',
+            ],
             refresh: true,
             fonts: [
                 bunny('Instrument Sans', {
@@ -31,11 +34,16 @@ export default defineConfig({
                 },
             },
         }),
-        wayfinder({
-            formVariants: true,
-            // Mac'da PHP yo'q: wayfinder'ni Sail konteyneri ichida ishga tushiramiz
-            command: './vendor/bin/sail artisan wayfinder:generate',
-        }),
+        // Testlarda (vp test) Wayfinder generatsiyasi kerak emas — Sail ishlamasa ham testlar yuradi.
+        ...(process.env.VITEST
+            ? []
+            : [
+                  wayfinder({
+                      formVariants: true,
+                      // Mac'da PHP yo'q: wayfinder'ni Sail konteyneri ichida ishga tushiramiz
+                      command: './vendor/bin/sail artisan wayfinder:generate',
+                  }),
+              ]),
     ]),
     server: {
         // IPv4 manzil: Node "localhost" ni [::1] ga aylantiradi, CSP esa IPv6 manzilni
@@ -51,6 +59,11 @@ export default defineConfig({
             ],
         },
     },
+    test: {
+        // Pure TS (shared/lib, entities, features/model) va composable testlari — DOM kerak emas.
+        include: ['resources/js/**/*.test.ts'],
+        environment: 'node',
+    },
     lint: {
         ignorePatterns: [
             'vendor/**',
@@ -59,7 +72,8 @@ export default defineConfig({
             'bootstrap/ssr/**',
             'tailwind.config.js',
             'resources/js/actions/**',
-            'resources/js/components/ui/*',
+            // shadcn-vue (CLI generatsiya qiladi) — shared/ui/<komponent>/ papkalari; o'zimizning shared/ui/*.vue tekshiriladi
+            'resources/js/shared/ui/*/**',
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
         ],
@@ -78,12 +92,12 @@ export default defineConfig({
         ignorePatterns: [
             '.github/**',
             'composer.json',
-            'resources/js/components/ui/*',
+            'resources/js/shared/ui/*/**',
             'resources/views/mail/*',
         ],
         sortTailwindcss: {
             functions: ['clsx', 'cn', 'cva'],
-            stylesheet: 'resources/css/app.css',
+            stylesheet: 'resources/js/app/styles/main.css',
         },
     },
 });

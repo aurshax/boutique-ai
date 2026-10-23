@@ -38,7 +38,7 @@ class HomeController extends Controller
                 'extra_price_uzs' => (int) ($fabric->getAttribute('min_extra_uzs') ?? 0),
             ]);
 
-        return Inertia::render('Welcome', [
+        return Inertia::render('home/HomePage', [
             'styles' => $styles,
             'fabrics' => $fabrics,
             'estimateUsd' => config('tryon.estimate_usd'),
