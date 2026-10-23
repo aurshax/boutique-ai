@@ -2,11 +2,14 @@
 
 namespace App\Providers;
 
+use App\TryOn\Contracts\TryOnProvider;
+use App\TryOn\Providers\MockProvider;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use InvalidArgumentException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +18,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // TryOnProvider interfeysi → config('tryon.provider') bo'yicha implementatsiya.
+        // 'openai' 11-taskda qo'shiladi.
+        $this->app->bind(TryOnProvider::class, fn (): TryOnProvider => match (config('tryon.provider')) {
+            'mock' => new MockProvider,
+            default => throw new InvalidArgumentException('Noma\'lum TRYON_PROVIDER: '.config('tryon.provider')),
+        });
     }
 
     /**
