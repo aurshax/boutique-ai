@@ -43,12 +43,21 @@ class CatalogSeeder extends Seeder
         ];
 
         $out = [];
+        // Swatch rasmlari (public/media/fabrics, Unsplash). Rasm yo'q tkanlar UI'da rang bilan ko'rsatiladi.
+        // Eslatma: bu namunaviy teksturalar — real do'konda o'z matosining rasmi bo'ladi.
+        $swatches = [
+            'grey-check' => 'media/fabrics/fabric-navy-check-grey-twill.webp',
+            'mid-grey-birdseye' => 'media/fabrics/fabric-olive-houndstooth.webp',
+            'brown-herringbone' => 'media/fabrics/fabric-camel-houndstooth-brown.webp',
+        ];
+
         foreach ($rows as [$slug, $name, $composition, $pattern, $hex]) {
             $out[$slug] = Fabric::updateOrCreate(['slug' => $slug], [
                 'name' => $name,
                 'composition' => $composition,
                 'pattern' => $pattern,
                 'color_hex' => $hex,
+                'swatch_image' => $swatches[$slug] ?? null,
             ]);
         }
 
@@ -175,27 +184,28 @@ class CatalogSeeder extends Seeder
     private function seedStylesAndLooks(array $products): void
     {
         $styles = [
-            ['classic', 'Classic', "Vaqt sinovidan o'tgan, rasmiy uchrashuvlar uchun", 1, [
+            ['classic', 'Classic', "Vaqt sinovidan o'tgan, rasmiy uchrashuvlar uchun", 1, 'media/hero/look-black-suit.webp', [
                 ['classic-navy-suit', "To'q ko'k klassika", ['trousers-navy-classic', 'blazer-navy', 'shirt-white-poplin', 'tie-burgundy-silk', 'belt-black-leather', 'shoes-black-oxford']],
                 ['classic-charcoal', 'Antrasit pinstripe', ['trousers-charcoal-pinstripe', 'blazer-grey-birdseye', 'shirt-white-poplin', 'tie-navy-grenadine', 'belt-black-leather', 'shoes-black-oxford']],
             ]],
-            ['office', 'Office', "Har kunlik ofis uchun, galstuksiz ham bo'ladi", 2, [
+            ['office', 'Office', "Har kunlik ofis uchun, galstuksiz ham bo'ladi", 2, 'media/hero/look-grey-blazer-stairs.webp', [
                 ['office-grey-check', 'Kulrang katak', ['trousers-grey-check', 'blazer-navy', 'shirt-light-blue-oxford', 'belt-black-leather', 'shoes-black-oxford']],
                 ['office-navy-oxford', "To'q ko'k va oxford", ['trousers-navy-classic', 'shirt-light-blue-oxford', 'tie-navy-grenadine', 'belt-brown-suede', 'shoes-brown-loafer']],
             ]],
-            ['smart-casual', 'Smart Casual', 'Rasmiy va erkin uslub orasida', 3, [
+            ['smart-casual', 'Smart Casual', 'Rasmiy va erkin uslub orasida', 3, 'media/hero/look-navy-suit.webp', [
                 ['smart-navy-knit', 'Navy Knit', ['trousers-navy-classic', 'blazer-navy', 'shirt-cream-knit-polo', 'belt-brown-suede', 'shoes-brown-loafer']],
                 ['smart-herringbone', 'Herringbone kech', ['trousers-charcoal-pinstripe', 'blazer-brown-herringbone', 'shirt-cream-knit-polo', 'belt-brown-suede', 'shoes-brown-loafer']],
             ]],
-            ['summer', 'Yozgi', "Issiq kunlar uchun yengil matolar", 4, [
+            ['summer', 'Yozgi', "Issiq kunlar uchun yengil matolar", 4, 'media/hero/look-pinstripe-double-breasted.webp', [
                 ['summer-linen', "Zig'ir yoz", ['trousers-beige-linen', 'shirt-white-poplin', 'belt-brown-suede', 'shoes-brown-loafer']],
             ]],
         ];
 
-        foreach ($styles as [$slug, $name, $description, $sort, $looks]) {
+        foreach ($styles as [$slug, $name, $description, $sort, $cover, $looks]) {
             $style = Style::updateOrCreate(['slug' => $slug], [
                 'name' => $name,
                 'description' => $description,
+                'cover_image' => $cover,
                 'sort' => $sort,
             ]);
 

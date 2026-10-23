@@ -14,11 +14,12 @@ use Illuminate\Support\Carbon;
  * @property string $slug
  * @property string $name
  * @property string|null $description
+ * @property string|null $cover_image
  * @property int $sort
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['slug', 'name', 'description', 'sort'])]
+#[Fillable(['slug', 'name', 'description', 'cover_image', 'sort'])]
 class Style extends Model
 {
     /** @return HasMany<Look, $this> */

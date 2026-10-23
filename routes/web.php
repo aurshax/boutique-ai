@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TryOnController;
 use App\Http\Middleware\ExtractOpenAiKey;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'Welcome')->name('home');
+Route::get('/', HomeController::class)->name('home');
 
 // Try-on: login shart emas. Egalik session orqali (TryOnController::owned).
 Route::get('try-on', [TryOnController::class, 'create'])->name('try-on.create');

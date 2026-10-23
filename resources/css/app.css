@@ -7,6 +7,37 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* boutique-ai brend tokenlari (dizayn: Design canvas "Boutique AI — dizayn") */
+@theme {
+    --font-display: 'Bodoni Moda', Georgia, 'Times New Roman', serif;
+    --font-body: Figtree, ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --color-ink: #0f1726;        /* asosiy to'q ko'k */
+    --color-ink-2: #172036;      /* kartochka foni (qorong'i) */
+    --color-chalk: #e5c46b;      /* tikuvchi bo'ri — aksent */
+    --color-chalk-hover: #f1d58a;
+    --color-chalk-deep: #c79a2e; /* yorug' fonda aksent */
+    --color-chalk-soft: #f5e7bd;
+    --color-mist: #c9cfda;       /* qorong'i fonda ikkinchi darajali matn */
+    --color-fog: #9aa3b2;        /* qorong'i fonda uchinchi darajali matn */
+    --color-paper: #eef0f3;      /* yorug' sahifa foni */
+    --color-line: #d7dce3;
+    --color-slate: #5b6474;      /* yorug' fonda ikkinchi darajali matn */
+    --color-thread: #c2553f;     /* o'lchov ko'rsatkichi */
+}
+
+@layer components {
+    /* Santimetr lentasi: mayda chiziq har 12px, katta chiziq har 60px */
+    .tape-measure {
+        background-image:
+            repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 12px),
+            repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 60px);
+        background-size: auto 10px, auto 22px;
+        background-repeat: repeat-x;
+    }
+}
+
 @theme inline {
     --font-sans:
         Instrument Sans, ui-sans-serif, system-ui, sans-serif,

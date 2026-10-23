@@ -26,7 +26,12 @@ class PromptBuilderTest extends TestCase
         $this->assertStringContainsString('Kulrang katak', $built['prompt']);
         $this->assertStringContainsString('trousers:', $built['prompt']);
         $this->assertStringContainsString('Keep his face', $built['prompt']);
-        // Katalog rasmlari hali yo'q — reference ham yo'q, faqat matnli tavsif.
-        $this->assertSame([], $built['references']);
+        // Mahsulot rasmlari hali yo'q (matnli tavsif); kulrang katak tkanining swatch rasmi bor bo'lsa — u reference.
+        $swatchExists = is_file(public_path('media/fabrics/fabric-navy-check-grey-twill.webp'));
+        $this->assertCount($swatchExists ? 1 : 0, $built['references']);
+        if ($swatchExists) {
+            $this->assertSame('fabric swatch', $built['references'][0]->label);
+            $this->assertStringContainsString('fabric swatch in image 2', $built['prompt']);
+        }
     }
 }

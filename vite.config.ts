@@ -15,6 +15,10 @@ export default defineConfig({
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
                 }),
+                // boutique-ai brend shriftlari (docs/ARCHITECTURE.md, dizayn)
+                bunny('Bodoni Moda', { weights: [500, 600] }),
+                bunny('Figtree', { weights: [400, 500, 600, 700] }),
+                bunny('JetBrains Mono', { weights: [400, 500] }),
             ],
         }),
         inertia(),
