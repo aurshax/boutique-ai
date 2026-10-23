@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 
 /**
@@ -18,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property string $slug
  * @property ProductType $type
  * @property string $name
- * @property string|null $description  English visual description (image generation and try-on prompt)
+ * @property string|null $description English visual description (image generation and try-on prompt)
  * @property int $price_uzs
  * @property string|null $image
  * @property int|null $default_fabric_id
@@ -44,7 +45,11 @@ class Product extends Model
         return $this->belongsTo(Fabric::class, 'default_fabric_id');
     }
 
-    /** Fabrics this product can be made in. @return BelongsToMany<Fabric, $this> */
+    /**
+     * Fabrics this product can be made in, with a per-product surcharge on the pivot.
+     *
+     * @return BelongsToMany<Fabric, $this, Pivot, 'pivot'>
+     */
     public function fabrics(): BelongsToMany
     {
         return $this->belongsToMany(Fabric::class, 'product_fabric')->withPivot('extra_price_uzs');

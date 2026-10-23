@@ -30,9 +30,10 @@ class CompareTryOnModels extends Command
 
     public function handle(PromptBuilder $prompts, ImageService $images): int
     {
-        $request = $this->argument('request') === 'latest'
+        $id = $this->argument('request');
+        $request = $id === 'latest'
             ? TryOnRequest::with(['look.products', 'fabric'])->whereNotNull('upload_path')->latest()->first()
-            : TryOnRequest::with(['look.products', 'fabric'])->find($this->argument('request'));
+            : TryOnRequest::with(['look.products', 'fabric'])->find(is_string($id) ? $id : '');
 
         if ($request === null || $request->upload_path === null || $request->look === null) {
             $this->error('Request not found or its photo was deleted (photos are kept for 24 hours).');
@@ -40,8 +41,11 @@ class CompareTryOnModels extends Command
             return self::FAILURE;
         }
 
-        $models = $this->option('model') ?: [(string) config('tryon.openai.model')];
-        $quality = (string) $this->option('quality');
+        $specs = $this->option('model');
+        $models = is_array($specs) && $specs !== []
+            ? array_map(strval(...), $specs)
+            : [(string) config('tryon.openai.model')];
+        $quality = is_string($q = $this->option('quality')) ? $q : 'medium';
 
         $this->warn(sprintf('%d generation(s), quality: %s — each one is billed to your OpenAI account.', count($models), $quality));
         $key = (string) $this->secret('OpenAI API key');

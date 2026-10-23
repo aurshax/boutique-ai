@@ -68,6 +68,13 @@ return [
     'timezone' => 'UTC',
 
     /*
+    | Proxies whose X-Forwarded-* headers are trusted (TrustConfiguredProxies): "*" behind a
+    | platform load balancer, a comma-separated IP list, or empty in local development.
+    */
+
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------

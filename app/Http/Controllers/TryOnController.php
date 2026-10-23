@@ -7,6 +7,7 @@ use App\Enums\TryOnStatus;
 use App\Http\Middleware\ExtractOpenAiKey;
 use App\Http\Requests\CreateTryOnRequest;
 use App\Jobs\TryOnJob;
+use App\Models\Fabric;
 use App\Models\Look;
 use App\Models\Product;
 use App\Models\Style;
@@ -53,14 +54,14 @@ class TryOnController extends Controller
                         'image' => $p->image ? '/'.$p->image : null,
                         // Trousers and blazer fabrics (each with its own surcharge) — a suit needs both.
                         'fabrics' => $p->type->supportsFabricSwap()
-                            ? $p->fabrics->map(fn ($f) => [
+                            ? $p->fabrics->map(fn (Fabric $f) => [
                                 'id' => $f->id,
                                 'name' => $f->name,
                                 'composition' => $f->composition,
                                 'pattern' => $f->pattern->value,
                                 'color_hex' => $f->color_hex,
                                 'swatch_image' => $f->swatch_image,
-                                'extra_price_uzs' => (int) $f->pivot->extra_price_uzs,
+                                'extra_price_uzs' => (int) data_get($f, 'pivot.extra_price_uzs'),   // pivot column (withPivot)
                             ])->values()
                             : [],
                     ])->values(),
@@ -86,7 +87,7 @@ class TryOnController extends Controller
     {
         $data = $request->validated();
         $apiKey = $request->attributes->get(ExtractOpenAiKey::ATTRIBUTE);
-        $look = Look::with('products')->findOrFail($data['look_id']);
+        $look = Look::with('products')->findOrFail((int) $data['look_id']);
 
         $sourceId = $data['source_request_id'] ?? null;
         if ($sourceId !== null) {

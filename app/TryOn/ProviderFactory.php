@@ -41,6 +41,7 @@ class ProviderFactory
         };
     }
 
+    /** @return 'mock'|'openai'|'auto' */
     private function mode(): string
     {
         $mode = (string) config('tryon.provider');

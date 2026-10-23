@@ -5,6 +5,7 @@ namespace Tests\Feature\TryOn;
 use App\Models\Fabric;
 use App\Models\Look;
 use App\Models\Product;
+use App\TryOn\Data\ReferenceImage;
 use App\TryOn\PromptBuilder;
 use Database\Seeders\CatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -93,7 +94,7 @@ class PromptBuilderTest extends TestCase
         $this->assertCount(0, $this->build()['references']);
     }
 
-    /** @return array{prompt: string, references: list<\App\TryOn\Data\ReferenceImage>} */
+    /** @return array{prompt: string, references: list<ReferenceImage>} */
     private function build(): array
     {
         $look = Look::where('slug', 'smart-navy-knit')->firstOrFail();

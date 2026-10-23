@@ -53,7 +53,9 @@ class GenerateCatalogImages extends Command
             return self::SUCCESS;
         }
 
-        $this->warn(sprintf('%d image(s), model: %s, quality: %s — billed to your OpenAI account.', count($todo), $this->option('model'), $this->option('quality')));
+        $model = $this->stringOption('model');
+        $quality = $this->stringOption('quality');
+        $this->warn(sprintf('%d image(s), model: %s, quality: %s — billed to your OpenAI account.', count($todo), $model, $quality));
         $key = (string) $this->secret('OpenAI API key');
         if (! str_starts_with($key, 'sk-')) {
             $this->error('The key must start with sk-.');
@@ -66,7 +68,7 @@ class GenerateCatalogImages extends Command
         $bar = $this->output->createProgressBar(count($todo));
         foreach ($todo as $job) {
             try {
-                $result = $generator->generate($job['prompt'], $key, (string) $this->option('model'), (string) $this->option('quality'));
+                $result = $generator->generate($job['prompt'], $key, $model, $quality);
             } catch (RuntimeException $e) {
                 $failed++;
                 $this->newLine();
@@ -118,5 +120,13 @@ class GenerateCatalogImages extends Command
         }
 
         return $jobs;
+    }
+
+    /** A value option as a string (Symfony types options as mixed). */
+    private function stringOption(string $name): string
+    {
+        $value = $this->option($name);
+
+        return is_string($value) ? $value : '';
     }
 }

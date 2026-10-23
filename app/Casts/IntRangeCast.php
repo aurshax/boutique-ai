@@ -5,7 +5,6 @@ namespace App\Casts;
 use App\Support\IntRange;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
-use InvalidArgumentException;
 
 /**
  * Eloquent cast: Postgres int4range ↔ App\Support\IntRange.
@@ -31,12 +30,8 @@ class IntRangeCast implements CastsAttributes
             return null;
         }
 
-        if (is_array($value) && count($value) === 2) {
+        if (is_array($value)) {
             $value = new IntRange((int) $value[0], (int) $value[1]);
-        }
-
-        if (! $value instanceof IntRange) {
-            throw new InvalidArgumentException("{$key}: expected an IntRange or a [min, max] array.");
         }
 
         return $value->toPostgres();

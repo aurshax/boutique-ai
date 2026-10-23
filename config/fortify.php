@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountPagesEnabled;
 use Laravel\Fortify\Features;
 
 return [
@@ -102,7 +103,7 @@ return [
     */
 
     // EnsureAccountPagesEnabled: every Fortify route (login, reset, 2FA, passkeys) is a 404 when AUTH_ENABLED=false.
-    'middleware' => ['web', \App\Http\Middleware\EnsureAccountPagesEnabled::class],
+    'middleware' => ['web', EnsureAccountPagesEnabled::class],
 
     /*
     |--------------------------------------------------------------------------

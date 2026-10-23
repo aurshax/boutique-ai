@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string $slug
  * @property string $name
  * @property string|null $description
- * @property bool $is_suit  jacket and trousers share one fabric — the chosen fabric applies to both
+ * @property bool $is_suit jacket and trousers share one fabric — the chosen fabric applies to both
  * @property int $sort
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at

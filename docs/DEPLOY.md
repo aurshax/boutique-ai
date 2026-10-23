@@ -6,18 +6,18 @@ The public deployment is a demo: visitors get a free mock result, or bring their
 
 Use `.env.production.example` as the template. Most hosts (Laravel Cloud, Forge) take these values as environment variables in their dashboard. Never commit the real file.
 
-| Setting | Development (`.env.example`) | Production |
-|---|---|---|
-| `APP_ENV` / `APP_DEBUG` | `local` / `true` | `production` / `false` |
-| `LOG_LEVEL` | `debug` | `warning` (`LOG_STACK=stderr` on Laravel Cloud) |
-| `DB_*` | Sail PostgreSQL | Managed PostgreSQL, `DB_SSLMODE=require` |
-| `SESSION_ENCRYPT`, `SESSION_SECURE_COOKIE` | `false` | `true` |
-| `TRUSTED_PROXIES` | — | `*` behind the platform's load balancer (correct HTTPS URLs and client IPs for rate limits) |
-| `AUTH_ENABLED` | `true` | `false` — every account page (login, sign-up, password reset, 2FA, passkeys, dashboard, settings) returns 404 |
-| `AUTH_REGISTRATION` | `true` | `false` — no sign-ups on the demo |
-| Seeded admin | created | not created (`app()->isProduction()`) |
-| `TRYON_PROVIDER` | `mock` / `openai` | `auto` |
-| `TRYON_DISK` | `local` | `s3` (private bucket) |
+| Setting                                    | Development (`.env.example`) | Production                                                                                                    |
+| ------------------------------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `APP_ENV` / `APP_DEBUG`                    | `local` / `true`             | `production` / `false`                                                                                        |
+| `LOG_LEVEL`                                | `debug`                      | `warning` (`LOG_STACK=stderr` on Laravel Cloud)                                                               |
+| `DB_*`                                     | Sail PostgreSQL              | Managed PostgreSQL, `DB_SSLMODE=require`                                                                      |
+| `SESSION_ENCRYPT`, `SESSION_SECURE_COOKIE` | `false`                      | `true`                                                                                                        |
+| `TRUSTED_PROXIES`                          | —                            | `*` behind the platform's load balancer (correct HTTPS URLs and client IPs for rate limits)                   |
+| `AUTH_ENABLED`                             | `true`                       | `false` — every account page (login, sign-up, password reset, 2FA, passkeys, dashboard, settings) returns 404 |
+| `AUTH_REGISTRATION`                        | `true`                       | `false` — no sign-ups on the demo                                                                             |
+| Seeded admin                               | created                      | not created (`app()->isProduction()`)                                                                         |
+| `TRYON_PROVIDER`                           | `mock` / `openai`            | `auto`                                                                                                        |
+| `TRYON_DISK`                               | `local`                      | `s3` (private bucket)                                                                                         |
 
 ## Storage
 

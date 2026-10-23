@@ -34,14 +34,14 @@ npm run dev
 
 ## Try-on settings (`.env`)
 
-| Variable | Default | Notes |
-|---|---|---|
-| `TRYON_PROVIDER` | `mock` | `mock` \| `openai` \| `auto`. See [ARCHITECTURE.md](ARCHITECTURE.md#provider-modes-tryon_provider) |
-| `TRYON_OPENAI_MODEL` | `gpt-image-2.5-sunburst` | Prices per model in `config/tryon.php` → `openai.pricing` |
-| `TRYON_OPENAI_INPUT_FIDELITY` | empty | `high` keeps faces closer; gpt-image-1 / 1.5 only |
-| `TRYON_MOCK_DELAY` | `3` | Seconds, to see the waiting animation |
-| `TRYON_DISK` | `local` | `s3` in production |
-| `DB_QUEUE_RETRY_AFTER` | `200` | Must be greater than the worker `--timeout` |
+| Variable                      | Default                  | Notes                                                                                              |
+| ----------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------- |
+| `TRYON_PROVIDER`              | `mock`                   | `mock` \| `openai` \| `auto`. See [ARCHITECTURE.md](ARCHITECTURE.md#provider-modes-tryon_provider) |
+| `TRYON_OPENAI_MODEL`          | `gpt-image-2.5-sunburst` | Prices per model in `config/tryon.php` → `openai.pricing`                                          |
+| `TRYON_OPENAI_INPUT_FIDELITY` | empty                    | `high` keeps faces closer; gpt-image-1 / 1.5 only                                                  |
+| `TRYON_MOCK_DELAY`            | `3`                      | Seconds, to see the waiting animation                                                              |
+| `TRYON_DISK`                  | `local`                  | `s3` in production                                                                                 |
+| `DB_QUEUE_RETRY_AFTER`        | `200`                    | Must be greater than the worker `--timeout`                                                        |
 
 ## Commands
 
@@ -71,11 +71,11 @@ npm run types:check
 
 ## Troubleshooting
 
-| Symptom | Cause | Fix |
-|---|---|---|
-| Result is still a mock after switching to `openai` | The queue worker is long-lived and kept the old config | `sail artisan queue:restart`, then start the worker again |
-| Styles and scripts blocked by CSP on localhost | Node resolved `localhost` to `[::1]`, which the CSP cannot allow-list | `vite.config.ts` pins `server.host: '127.0.0.1'`; check that `public/hot` says `http://127.0.0.1:5173` |
-| `php: command not found` from Wayfinder in `npm run dev` | The Wayfinder Vite plugin calls `php artisan` on the host | It is configured to run through Sail, so Sail must be up. Tests skip it (`process.env.VITEST`) |
-| Port clash on 5173 | Sail also forwards the Vite port | `VITE_PORT=5199` in `.env`, then `sail up -d` |
-| `zsh: no such service: #` | zsh passes `# comment` as an argument | Don't paste inline comments, or `setopt interactivecomments` |
-| `sail php -v` shows PHP < 8.5.12 | PHP2Shell (CVE-2026-109618/109619) fix not yet built for arm64 | `docker/php/99z-php2shell.ini` applies the interim mitigation; rebuild with `sail build --no-cache` and remove the ini once 8.5.12+ is installed |
+| Symptom                                                  | Cause                                                                 | Fix                                                                                                                                              |
+| -------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Result is still a mock after switching to `openai`       | The queue worker is long-lived and kept the old config                | `sail artisan queue:restart`, then start the worker again                                                                                        |
+| Styles and scripts blocked by CSP on localhost           | Node resolved `localhost` to `[::1]`, which the CSP cannot allow-list | `vite.config.ts` pins `server.host: '127.0.0.1'`; check that `public/hot` says `http://127.0.0.1:5173`                                           |
+| `php: command not found` from Wayfinder in `npm run dev` | The Wayfinder Vite plugin calls `php artisan` on the host             | It is configured to run through Sail, so Sail must be up. Tests skip it (`process.env.VITEST`)                                                   |
+| Port clash on 5173                                       | Sail also forwards the Vite port                                      | `VITE_PORT=5199` in `.env`, then `sail up -d`                                                                                                    |
+| `zsh: no such service: #`                                | zsh passes `# comment` as an argument                                 | Don't paste inline comments, or `setopt interactivecomments`                                                                                     |
+| `sail php -v` shows PHP < 8.5.12                         | PHP2Shell (CVE-2026-109618/109619) fix not yet built for arm64        | `docker/php/99z-php2shell.ini` applies the interim mitigation; rebuild with `sail build --no-cache` and remove the ini once 8.5.12+ is installed |

@@ -15,15 +15,16 @@ Built as a portfolio project for menswear boutiques: the catalogue, prices and f
 
 ## Stack
 
-| Layer | Tech |
-|---|---|
-| Backend | Laravel 13, PHP 8.5, PostgreSQL 18, database queue, Fortify |
+| Layer    | Tech                                                                                                             |
+| -------- | ---------------------------------------------------------------------------------------------------------------- |
+| Backend  | Laravel 13, PHP 8.5, PostgreSQL 18, database queue, Fortify                                                      |
 | Frontend | Inertia 3, Vue 3 (Composition API, `<script setup>`), TypeScript, Tailwind CSS 4, shadcn-vue, motion-v, vue-i18n |
-| Tooling | Laravel Sail (Docker), Vite+ (`vp test` / `vp check`), Wayfinder (typed routes), PHPUnit, Vitest |
+| Tooling  | Laravel Sail (Docker), Vite+ (`vp test` / `vp check`), Wayfinder (typed routes), PHPUnit, Vitest                 |
 
 ## Architecture
 
 **Backend** (`app/TryOn`):
+
 - `TryOnProvider` contract with `MockProvider` and `OpenAiProvider`, selected by `ProviderFactory` (`mock` | `openai` | `auto`).
 - `TryOnJob` runs on the queue with an encrypted payload, `tries=1` and an atomic status transition.
 - Helpers: `PromptBuilder`, `ImageService` (validation, re-encoding, storage), `SizeSuggester`, and `OpenAiErrors` (maps API errors to user-facing messages).
@@ -39,6 +40,7 @@ app → pages → widgets → features → entities → shared
 - The try-on wizard is a small state machine (`widgets/try-on-wizard/model/flow.ts`).
 
 **Security:**
+
 - CSP with a per-request nonce, and the API key is accepted only in the `X-OpenAI-Key` header (stripped by middleware before logging).
 - Requests are owned by the session and use UUIDs.
 - Rate limits, and only status codes of OpenAI errors are logged.
@@ -60,6 +62,7 @@ npm run dev
 ```
 
 Then:
+
 - start the queue worker in another terminal: `./vendor/bin/sail artisan queue:work --timeout=180 --tries=1`;
 - open http://localhost — the try-on page is at `/try-on`.
 

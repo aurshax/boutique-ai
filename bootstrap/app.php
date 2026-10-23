@@ -4,10 +4,13 @@ use App\Http\Middleware\EnsureAccountPagesEnabled;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TrustConfiguredProxies;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -19,15 +22,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
-        // Behind a hosting load balancer / reverse proxy (Laravel Cloud, Caddy...): trust X-Forwarded-*
-        // so HTTPS URLs and client IPs (rate limits) are correct. Empty in local development.
-        if ($proxies = env('TRUSTED_PROXIES')) {
-            $middleware->trustProxies(at: $proxies === '*' ? '*' : explode(',', $proxies));
-        }
+        // Behind a hosting load balancer / reverse proxy: trust X-Forwarded-* from config('app.trusted_proxies')
+        // (read per request, so it also works with `config:cache`, unlike env() here).
+        $middleware->replace(TrustProxies::class, TrustConfiguredProxies::class);
 
         // Account pages off → 404 before `auth` can redirect a guest to the (hidden) login page.
         $middleware->prependToPriorityList(
-            before: \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            before: AuthenticatesRequests::class,
             prepend: EnsureAccountPagesEnabled::class,
         );
 

@@ -14,6 +14,7 @@ use Database\Seeders\CatalogSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class CatalogSchemaTest extends TestCase
@@ -127,7 +128,7 @@ class CatalogSchemaTest extends TestCase
             'params' => ['quality' => 'medium'],
         ]);
 
-        $this->assertTrue(\Illuminate\Support\Str::isUuid($request->id));
+        $this->assertTrue(Str::isUuid($request->id));
         $this->assertSame('queued', $request->fresh()?->status->value);
 
         // jsonb containment (served by the GIN index)
