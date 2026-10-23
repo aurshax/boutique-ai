@@ -9,7 +9,8 @@ services:
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
-            - '${APP_PORT:-80}:80'
+            # Bound to localhost: the dev server is not reachable from the local network.
+            - '127.0.0.1:${APP_PORT:-80}:80'
             - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
         environment:
             WWWUSER: '${WWWUSER}'
@@ -19,6 +20,8 @@ services:
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
         volumes:
             - '.:/var/www/html'
+            # PHP2Shell mitigation (docs/SETUP.md, "Ma'lum xatolar") — remove after PHP >= 8.5.12.
+            - './docker/php/99z-php2shell.ini:/etc/php/8.5/cli/conf.d/99z-php2shell.ini:ro'
         networks:
             - sail
         depends_on:
