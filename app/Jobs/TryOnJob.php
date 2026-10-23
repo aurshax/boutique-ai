@@ -72,14 +72,23 @@ class TryOnJob implements ShouldBeEncrypted, ShouldQueue
 
             $resultPath = $images->storeResult($request->id, $result->imageBytes);
 
-            $request->update([
-                'status' => TryOnStatus::Done,
-                'result_path' => $resultPath,
-                'model' => $result->model,
-                'cost_usd' => $result->costUsd,
-                'params' => [...$request->params, 'usage' => $result->usage],
-                'finished_at' => now(),
-            ]);
+            // Atomar yakunlash: mijoz shu orada "to'xtatish"/"o'chirish" bossa (status = cancelled),
+            // natijani yozmaymiz va faylni o'chiramiz. Narx baribir yoziladi — pul yechilgan.
+            $finished = TryOnRequest::whereKey($request->id)
+                ->where('status', TryOnStatus::Running->value)
+                ->update([
+                    'status' => TryOnStatus::Done->value,
+                    'result_path' => $resultPath,
+                    'model' => $result->model,
+                    'cost_usd' => $result->costUsd,
+                    'params' => json_encode([...$request->params, 'usage' => $result->usage], JSON_THROW_ON_ERROR),
+                    'finished_at' => now(),
+                ]);
+
+            if ($finished === 0) {
+                $images->delete($resultPath);
+                TryOnRequest::whereKey($request->id)->update(['model' => $result->model, 'cost_usd' => $result->costUsd]);
+            }
         } catch (TryOnProviderException|InvalidImageException $e) {
             // Kutilgan xato — foydalanuvchiga ko'rsatsa bo'ladigan xabar.
             $this->markFailed($request, $e->getMessage());
@@ -103,12 +112,15 @@ class TryOnJob implements ShouldBeEncrypted, ShouldQueue
         }
     }
 
+    /** Faqat hali tugamagan so'rovni failed qiladi (cancelled ustidan yozmaydi). */
     private function markFailed(TryOnRequest $request, string $message): void
     {
-        $request->update([
-            'status' => TryOnStatus::Failed,
-            'error' => mb_substr($message, 0, 500),
-            'finished_at' => now(),
-        ]);
+        TryOnRequest::whereKey($request->id)
+            ->whereIn('status', [TryOnStatus::Queued->value, TryOnStatus::Running->value])
+            ->update([
+                'status' => TryOnStatus::Failed->value,
+                'error' => mb_substr($message, 0, 500),
+                'finished_at' => now(),
+            ]);
     }
 }

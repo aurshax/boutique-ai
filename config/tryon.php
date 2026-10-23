@@ -37,6 +37,12 @@ return [
         'connect_timeout' => 10,
     ],
 
+    // Generatsiyadan oldin mijozga ko'rsatiladigan taxminiy narx (USD, bitta look, 4 ta kirish rasmi).
+    'estimate_usd' => [
+        'medium' => 0.05,
+        'high' => 0.09,
+    ],
+
     'job' => [
         'timeout' => 180,                                    // DB_QUEUE_RETRY_AFTER undan katta bo'lishi shart (200)
     ],

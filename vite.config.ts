@@ -34,6 +34,9 @@ export default defineConfig({
         }),
     ]),
     server: {
+        // IPv4 manzil: Node "localhost" ni [::1] ga aylantiradi, CSP esa IPv6 manzilni
+        // ruxsat ro'yxatiga qo'sha olmaydi → skriptlar bloklanadi (docs/SETUP.md, Ma'lum xatolar).
+        host: '127.0.0.1',
         watch: {
             ignored: [
                 '**/.agents/**',
