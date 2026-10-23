@@ -51,6 +51,8 @@ class OpenAiProviderTest extends TestCase
                 && $request->hasHeader('Authorization', 'Bearer '.self::KEY)
                 && $request['model'] === config('tryon.openai.model')
                 && $request['quality'] === 'high'
+                && $request['size'] === '1536x1536'          // 8×8 kvadrat → nisbat saqlanadi, eng uzun tomon 1536
+                && ! isset($request['input_fidelity'])       // gpt-image-2.5 uchun yuborilmaydi
                 && count($request['images']) === 2
                 && str_starts_with($request['images'][0]['image_url'], 'data:image/jpeg;base64,');
         });
@@ -130,6 +132,22 @@ class OpenAiProviderTest extends TestCase
         config(['tryon.provider' => 'openai']);
 
         $this->assertInstanceOf(OpenAiProvider::class, app(TryOnProvider::class));
+    }
+
+    public function test_model_override_sends_input_fidelity_and_skips_unknown_pricing(): void
+    {
+        Http::fake(['*' => Http::response([
+            'data' => [['b64_json' => base64_encode($this->jpeg())]],
+            'usage' => ['input_tokens' => 10, 'output_tokens' => 10],
+        ])]);
+
+        $result = (new OpenAiProvider('gpt-image-1.5', 'high'))->generate($this->input());
+
+        $this->assertSame('gpt-image-1.5', $result->model);
+        $this->assertNull($result->costUsd);   // narxi config'da yo'q — taxmin qilmaymiz
+        Http::assertSent(fn (Request $r) => $r['model'] === 'gpt-image-1.5'
+            && $r['input_fidelity'] === 'high'
+            && $r['size'] === '1024x1024');
     }
 
     public function test_cost_without_details_counts_input_as_image_tokens(): void

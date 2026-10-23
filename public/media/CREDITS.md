@@ -17,3 +17,6 @@ Originallar: `public/media/_originals/` (git'ga tushmaydi).
 | fabrics/fabric-olive-houndstooth.webp | Victor Volkov | https://unsplash.com/photos/a-close-up-of-a-gray-and-black-checkered-fabric-SIOtRQKmi10 |
 | fabrics/fabric-navy-check-grey-twill.webp | Victor Volkov | https://unsplash.com/photos/a-close-up-of-a-blue-and-grey-fabric-kwpJY3RbObo |
 | fabrics/fabric-camel-houndstooth-brown.webp | Victor Volkov | https://unsplash.com/photos/a-close-up-of-a-brown-and-black-fabric-t3mSDMjd9ZY |
+
+## AI bilan yaratilgan (test katalogi)
+`catalog/*.webp` va `fabrics/swatch-*.webp` — OpenAI Images API (`sail artisan catalog:generate-images`) bilan loyiha uchun yaratilgan, uchinchi tomon mualliflik huquqi yo'q. Faqat test katalogi; real do'konda haqiqiy mahsulot fotosuratlari bilan almashtiriladi.

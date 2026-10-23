@@ -6,6 +6,7 @@ use App\Enums\TryOnStatus;
 use App\Jobs\TryOnJob;
 use App\Models\Fabric;
 use App\Models\Look;
+use App\Models\Product;
 use App\Models\TryOnRequest;
 use Database\Seeders\CatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -102,6 +103,24 @@ class TryOnHttpTest extends TestCase
             'look_id' => 999999,
         ])->assertStatus(422)
             ->assertJsonValidationErrors(['photo', 'height_cm', 'look_id', 'consent']);
+    }
+
+    public function test_suit_fabric_must_be_available_for_the_jacket_too(): void
+    {
+        // Kostyum (smart-navy-knit): katak tkanni blazerdan olib tashlaymiz — shimda bor, pidjakda yo'q.
+        $greyCheck = Fabric::where('slug', 'grey-check')->value('id');
+        Product::where('slug', 'blazer-navy')->firstOrFail()->fabrics()->detach($greyCheck);
+
+        $this->postJson('/try-on/requests', $this->payload(['fabric_id' => $greyCheck]))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('fabric_id');
+    }
+
+    public function test_create_page_sends_suit_flag_and_jacket_fabrics(): void
+    {
+        $this->get('/try-on')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('styles.0.looks.0.is_suit', true)                      // classic-navy-suit
+            ->has('styles.0.looks.0.products.1.fabrics', 7));               // blazer-navy: 7 ta jun
     }
 
     public function test_fabric_must_belong_to_look_trousers(): void

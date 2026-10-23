@@ -29,6 +29,7 @@ class HomeController extends Controller
             ->whereNotNull('swatch_image')
             ->withMin('products as min_extra_uzs', 'product_fabric.extra_price_uzs')
             ->orderBy('id')
+            ->limit(3)                       // Home vitrinasi 3 ta kartaga mo'ljallangan (FabricShowcase)
             ->get()
             ->map(fn (Fabric $fabric) => [
                 'slug' => $fabric->slug,

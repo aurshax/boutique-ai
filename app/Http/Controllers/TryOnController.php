@@ -42,6 +42,7 @@ class TryOnController extends Controller
                 'looks' => $style->looks->map(fn (Look $look) => [
                     'id' => $look->id,
                     'name' => $look->name,
+                    'is_suit' => $look->is_suit,
                     'total_price_uzs' => $look->totalPriceUzs(),
                     'products' => $look->products->map(fn (Product $p) => [
                         'id' => $p->id,
@@ -49,8 +50,9 @@ class TryOnController extends Controller
                         'type_label' => $p->type->label(),
                         'name' => $p->name,
                         'price_uzs' => $p->price_uzs,
-                        'image' => $p->image,
-                        'fabrics' => $p->type === ProductType::Trousers
+                        'image' => $p->image ? '/'.$p->image : null,
+                        // Shim va blazer tkanlari (har birining o'z ustamasi bilan) — kostyumda ikkalasi kerak.
+                        'fabrics' => $p->type->supportsFabricSwap()
                             ? $p->fabrics->map(fn ($f) => [
                                 'id' => $f->id,
                                 'name' => $f->name,

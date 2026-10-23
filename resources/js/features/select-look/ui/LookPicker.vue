@@ -3,7 +3,11 @@
 // faol tab ostidagi pill `layout-id` bilan siljiydi.
 import { motion } from 'motion-v';
 import { computed } from 'vue';
-import { lookSummary } from '@/entities/catalog';
+import {
+    lookSummary,
+    ProductThumb,
+    productsWithImages,
+} from '@/entities/catalog';
 import type { Style } from '@/entities/catalog';
 import { formatUzs } from '@/shared/lib/format';
 
@@ -76,10 +80,26 @@ const looks = computed(
                 <span class="flex items-baseline justify-between gap-2">
                     <span class="text-xl font-semibold">{{ look.name }}</span>
                     <span
+                        v-if="look.is_suit"
+                        class="ml-auto rounded-full border border-line px-2.5 py-1 text-xs text-slate"
+                        >Kostyum</span
+                    >
+                    <span
                         v-if="look.id === lookId"
                         class="rounded-full bg-chalk-soft px-2.5 py-1 text-xs font-semibold text-[#7A5A12]"
                         >Tanlangan</span
                     >
+                </span>
+                <span
+                    v-if="productsWithImages(look).length"
+                    class="flex flex-wrap gap-1.5"
+                    aria-hidden="true"
+                >
+                    <ProductThumb
+                        v-for="p in productsWithImages(look)"
+                        :key="p.id"
+                        :product="p"
+                    />
                 </span>
                 <ul
                     v-if="look.id === lookId"

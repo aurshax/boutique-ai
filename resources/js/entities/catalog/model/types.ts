@@ -26,13 +26,17 @@ export type Product = {
     type_label: string;
     name: string;
     price_uzs: number;
+    /** '/media/catalog/...webp' yoki null (rasm hali generatsiya qilinmagan) */
     image: string | null;
+    /** Shim va blazer uchun mumkin bo'lgan tkanlar (ustama — shu mahsulot uchun); boshqalarda bo'sh. */
     fabrics: Fabric[];
 };
 
 export type Look = {
     id: number;
     name: string;
+    /** Pidjak va shim bir matodan (kostyum) — tanlangan tkan ikkalasiga qo'llanadi. */
+    is_suit: boolean;
     total_price_uzs: number;
     products: Product[];
 };

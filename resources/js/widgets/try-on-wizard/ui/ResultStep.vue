@@ -2,7 +2,12 @@
 // 3-qadam: oldin/keyin, look tarkibi va narxi, taxminiy razmer, tkanni almashtirish, yuklab olish.
 import { motion } from 'motion-v';
 import { computed } from 'vue';
-import { productPrice } from '@/entities/catalog';
+import {
+    fabricScope,
+    followsFabric,
+    ProductThumb,
+    productPrice,
+} from '@/entities/catalog';
 import { FabricSwatches } from '@/features/select-fabric';
 import { formatUsd, formatUzs } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
@@ -15,6 +20,7 @@ const { photoUrl, look, style, fabric, fabrics, total, heightCm, waistCm } =
     form;
 
 const canSwap = computed(() => swapFabricId.value !== form.fabricId.value);
+const scope = computed(() => fabricScope(look.value));
 const measurements = computed(
     () =>
         `bo'y ${heightCm.value} sm${waistCm.value ? ` · bel ${waistCm.value} sm` : ''}`,
@@ -54,23 +60,26 @@ const measurements = computed(
                     <motion.li
                         v-for="(p, i) in look?.products ?? []"
                         :key="p.id"
-                        class="flex justify-between gap-3 border-b border-paper py-3 text-[15px] last:border-0"
+                        class="flex items-center justify-between gap-3 border-b border-paper py-3 text-[15px] last:border-0"
                         :initial="{ opacity: 0, x: 12 }"
                         :animate="{ opacity: 1, x: 0 }"
                         :transition="{ delay: 0.2 + i * 0.07 }"
                     >
-                        <span>
+                        <ProductThumb :product="p" />
+                        <span class="flex-1">
                             <span class="text-slate">{{ p.type_label }} · </span
                             >{{ p.name }}
                             <span
-                                v-if="p.type === 'trousers' && fabric"
+                                v-if="look && fabric && followsFabric(look, p)"
                                 class="text-slate"
                             >
                                 · {{ fabric.name }}</span
                             >
                         </span>
                         <span class="font-mono text-sm whitespace-nowrap">{{
-                            formatUzs(productPrice(p, fabric))
+                            formatUzs(
+                                productPrice(look!, p, fabric?.id ?? null),
+                            )
                         }}</span>
                     </motion.li>
                 </ul>
@@ -105,7 +114,7 @@ const measurements = computed(
                 <FabricSwatches
                     v-model="swapFabricId"
                     :fabrics="fabrics"
-                    label="Shimni boshqa tkanda ko'rish"
+                    :label="`${scope.label}: boshqasida ko'rish`"
                 />
                 <Button
                     v-if="canSwap"
@@ -117,7 +126,8 @@ const measurements = computed(
                     Shu tkanda ko'rish · ≈ {{ estimate }}
                 </Button>
                 <p v-else class="text-sm text-slate">
-                    Rasm qayta yuklanmaydi — faqat shim yangi tkanda tikiladi.
+                    Rasm qayta yuklanmaydi — faqat {{ scope.pieces }} yangi
+                    tkanda tikiladi.
                 </p>
             </div>
 

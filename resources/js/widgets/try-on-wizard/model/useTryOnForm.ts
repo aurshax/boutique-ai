@@ -37,7 +37,7 @@ export function useTryOnForm(
     const style = computed(() => findStyleOfLook(styles, lookId.value));
     const fabrics = computed(() => fabricsOf(look.value));
     const fabric = computed(() => findFabric(look.value, fabricId.value));
-    const total = computed(() => lookTotal(look.value, fabric.value));
+    const total = computed(() => lookTotal(look.value, fabricId.value));
 
     // Uslub almashsa — uning birinchi look'i; look almashsa — narx qo'shmaydigan tkan.
     watch(styleId, (id) => {

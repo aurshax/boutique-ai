@@ -58,14 +58,16 @@ class CreateTryOnRequest extends FormRequest
                     }
                 }
 
-                // Tanlangan tkan shu look'dagi shim uchun ruxsat etilganmi?
+                // Tanlangan tkan shu look'da tkanga bog'liq HAR BIR mahsulot uchun ruxsat etilganmi?
+                // (oddiy look'da — shim, kostyumda — shim va blazer)
                 $fabricId = $this->integer('fabric_id') ?: null;
                 if ($fabricId !== null) {
-                    $trousers = Look::with('products.fabrics')->find($this->integer('look_id'))
-                        ?->products->first(fn ($p) => $p->type === ProductType::Trousers);
+                    $look = Look::with('products.fabrics')->find($this->integer('look_id'));
+                    $targets = $look?->products->filter(fn ($p) => $look->followsFabric($p)) ?? collect();
+                    $hasTrousers = $targets->contains(fn ($p) => $p->type === ProductType::Trousers);
 
-                    if ($trousers === null || ! $trousers->fabrics->contains('id', $fabricId)) {
-                        $validator->errors()->add('fabric_id', 'Bu tkan tanlangan look\'dagi shim uchun mavjud emas.');
+                    if (! $hasTrousers || $targets->contains(fn ($p) => ! $p->fabrics->contains('id', $fabricId))) {
+                        $validator->errors()->add('fabric_id', 'Bu tkan tanlangan look uchun mavjud emas.');
                     }
                 }
             },

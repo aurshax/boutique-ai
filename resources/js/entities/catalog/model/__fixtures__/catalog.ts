@@ -1,4 +1,5 @@
 // Testlar uchun kichik katalog (CatalogSeeder'dagi "Smart Casual" va "Yozgi" asosida).
+// Navy Knit — kostyum (is_suit): blazerning o'z tkan ustamalari shimnikidan farq qiladi (narx testi uchun).
 import type { Fabric, Style } from '../types';
 
 export const navyWool: Fabric = {
@@ -39,6 +40,7 @@ export const styles: Style[] = [
             {
                 id: 5,
                 name: 'Navy Knit',
+                is_suit: true,
                 total_price_uzs: 4_168_000,
                 products: [
                     {
@@ -56,8 +58,12 @@ export const styles: Style[] = [
                         type_label: 'Blazer',
                         name: "Blazer, to'q ko'k jun",
                         price_uzs: 1_890_000,
-                        image: null,
-                        fabrics: [],
+                        image: '/media/catalog/blazer-navy.webp',
+                        // blazerda katak +200k (shimda +130k); zig'ir yo'q
+                        fabrics: [
+                            { ...greyCheck, extra_price_uzs: 200_000 },
+                            navyWool,
+                        ],
                     },
                     {
                         id: 10,
@@ -99,6 +105,7 @@ export const styles: Style[] = [
             {
                 id: 7,
                 name: "Zig'ir yoz",
+                is_suit: false,
                 total_price_uzs: 2_098_000,
                 products: [
                     {

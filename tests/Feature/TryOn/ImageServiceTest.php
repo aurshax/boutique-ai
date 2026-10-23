@@ -23,8 +23,9 @@ class ImageServiceTest extends TestCase
         $clean = $this->images->sanitize($this->jpeg(3000, 2000));
 
         [$w, $h] = getimagesizefromstring($clean) ?: [0, 0];
-        $this->assertSame(1024, max($w, $h));
-        $this->assertSame(683, min($w, $h));
+        $max = (int) config('tryon.upload.max_side');
+        $this->assertSame($max, max($w, $h));
+        $this->assertSame((int) round($max * 2000 / 3000), min($w, $h));
     }
 
     public function test_output_is_always_jpeg_even_for_png_input(): void

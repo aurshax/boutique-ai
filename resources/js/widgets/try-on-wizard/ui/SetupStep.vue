@@ -1,6 +1,8 @@
 <script setup lang="ts">
 // 1-qadam: kalit (OpenAI rejimida), rasm, bo'y, bel, razmer, rozilik, look va tkan.
 // Container: holat injectTryOnFlow() dan, ko'rinish — features/* komponentlari.
+import { computed } from 'vue';
+import { fabricScope } from '@/entities/catalog';
 import { ApiKeyForm } from '@/features/byok-api-key';
 import { HeightTape, SizePicker } from '@/features/enter-measurements';
 import { FabricSwatches } from '@/features/select-fabric';
@@ -21,8 +23,10 @@ const {
     fabricId,
     consent,
     fabrics,
+    look,
     setPhoto,
 } = form;
+const scope = computed(() => fabricScope(look.value));
 const { remembered, save: saveKey } = apiKey;
 </script>
 
@@ -113,7 +117,11 @@ const { remembered, save: saveKey } = apiKey;
                 v-if="fabrics.length > 1"
                 class="flex flex-col gap-2 rounded-[20px] bg-white p-5"
             >
-                <FabricSwatches v-model="fabricId" :fabrics="fabrics" />
+                <FabricSwatches
+                    v-model="fabricId"
+                    :fabrics="fabrics"
+                    :label="scope.label"
+                />
                 <InputError :message="fieldError('fabric_id')" />
             </div>
         </section>

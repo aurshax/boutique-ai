@@ -29,17 +29,31 @@ class CatalogSchemaTest extends TestCase
     public function test_seeder_creates_test_catalog(): void
     {
         $this->assertSame(4, Style::count());
-        $this->assertSame(7, Look::count());
-        $this->assertSame(6, Fabric::count());
-        $this->assertSame(16, Product::count());
+        $this->assertSame(10, Look::count());
+        $this->assertSame(8, Fabric::count());
+        $this->assertSame(22, Product::count());
+        // Inglizcha vizual tavsif — rasm generatsiyasi va try-on prompti uchun
+        $this->assertSame(0, Product::whereNull('description')->count());
+    }
+
+    public function test_suit_looks_share_fabric_between_jacket_and_trousers(): void
+    {
+        $suit = Look::where('slug', 'classic-navy-suit')->with('products')->firstOrFail();
+        $separates = Look::where('slug', 'smart-herringbone')->with('products')->firstOrFail();
+
+        $this->assertTrue($suit->is_suit);
+        $this->assertFalse($separates->is_suit);
+        $blazer = fn (Look $look) => $look->products->first(fn ($p) => $p->type === ProductType::Blazer);
+        $this->assertTrue($suit->followsFabric($blazer($suit)));
+        $this->assertFalse($separates->followsFabric($blazer($separates)));
     }
 
     public function test_seeder_is_idempotent(): void
     {
         $this->seed(CatalogSeeder::class);
 
-        $this->assertSame(16, Product::count());
-        $this->assertSame(7, Look::count());
+        $this->assertSame(22, Product::count());
+        $this->assertSame(10, Look::count());
     }
 
     public function test_look_products_are_ordered_and_total_price_is_summed(): void
@@ -79,7 +93,7 @@ class CatalogSchemaTest extends TestCase
 
     public function test_only_trousers_and_blazers_support_fabric_swap(): void
     {
-        $this->assertSame(5, Product::where('slug', 'trousers-navy-classic')->firstOrFail()->fabrics()->count());
+        $this->assertSame(7, Product::where('slug', 'trousers-navy-classic')->firstOrFail()->fabrics()->count());
         $this->assertSame(0, Product::where('slug', 'tie-burgundy-silk')->firstOrFail()->fabrics()->count());
     }
 

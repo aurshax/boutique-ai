@@ -1,23 +1,38 @@
 <script setup lang="ts">
 // Oldin/keyin surgich. Natija rasmi yuqoridan pastga "mato yoyilgandek" ochiladi (clip-path).
+// Ramka natija rasmining o'z nisbatida (kesilmaydi) va ekran balandligiga sig'adi: to'liq bo'yli rasmda
+// oyoqlar ham ko'rinsin. Kirish va natija nisbati bir xil (backend OutputSize) — surgich ustma-ust tushadi.
 import { motion } from 'motion-v';
-import { ref, useId } from 'vue';
+import { computed, ref, useId } from 'vue';
 
 defineProps<{ before: string | null; after: string }>();
 const split = ref(55);
 const sliderId = useId();
+
+/** Natija yuklanguncha 2:3 (to'liq bo'yli kadr), keyin rasmning haqiqiy nisbati. */
+const ratio = ref(2 / 3);
+function onAfterLoad(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img.naturalWidth > 0 && img.naturalHeight > 0)
+        ratio.value = img.naturalWidth / img.naturalHeight;
+}
+const frameStyle = computed(() => ({
+    aspectRatio: String(ratio.value),
+    width: `min(100%, calc(82svh * ${ratio.value}))`,
+}));
 </script>
 
 <template>
     <div class="flex flex-col gap-3.5">
         <div
-            class="relative aspect-[4/5] overflow-hidden rounded-3xl bg-[#DDE1E7] lg:aspect-auto lg:h-[760px]"
+            class="relative mx-auto overflow-hidden rounded-3xl bg-[#DDE1E7]"
+            :style="frameStyle"
         >
             <img
                 v-if="before"
                 :src="before"
                 alt="Oldin: sizning rasmingiz"
-                class="absolute inset-0 h-full w-full object-cover object-[center_15%]"
+                class="absolute inset-0 h-full w-full object-cover"
             />
             <motion.div
                 class="absolute inset-0"
@@ -29,7 +44,8 @@ const sliderId = useId();
                 <img
                     :src="after"
                     alt="Keyin: tanlangan look'dagi natija"
-                    class="h-full w-full object-cover object-[center_15%]"
+                    class="h-full w-full object-cover"
+                    @load="onAfterLoad"
                 />
             </motion.div>
             <div
