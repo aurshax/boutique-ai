@@ -3,8 +3,7 @@
 return [
 
     /*
-    | Qaysi AI provider ishlaydi: 'mock' (bepul, development) yoki 'openai'.
-    | OpenAI provider 11-taskda qo'shiladi.
+    | Qaysi AI provider ishlaydi: 'mock' (bepul, development) yoki 'openai' (mijoz kaliti bilan, BYOK).
     */
     'provider' => env('TRYON_PROVIDER', 'mock'),
 
@@ -30,11 +29,20 @@ return [
     ],
 
     'openai' => [
+        'base_url' => env('TRYON_OPENAI_BASE_URL', 'https://api.openai.com/v1'),
         'model' => env('TRYON_OPENAI_MODEL', 'gpt-image-2.5-sunburst'),
         'quality' => env('TRYON_OPENAI_QUALITY', 'medium'),
-        'size' => '1024x1536',
+        'size' => '1024x1536',                               // vertikal — to'liq bo'yli rasm uchun
+        'output_compression' => 90,                          // natija JPEG (PNG'dan ~5x kichik)
         'timeout' => 170,                                    // job timeout'idan (180) kichik
         'connect_timeout' => 10,
+
+        // USD, 1M token uchun (platform.openai.com/docs/pricing, 2026-10-22). Narx o'zgarsa — shu yerda.
+        'pricing' => [
+            'text_input' => 5.00,
+            'image_input' => 8.00,
+            'image_output' => 30.00,
+        ],
     ],
 
     // Generatsiyadan oldin mijozga ko'rsatiladigan taxminiy narx (USD, bitta look, 4 ta kirish rasmi).

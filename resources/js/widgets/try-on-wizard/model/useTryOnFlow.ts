@@ -53,6 +53,9 @@ export function useTryOnFlow(page: TryOnPageProps) {
     /** Umumiy xato: tarmoq/HTTP yoki server "failed" holati. */
     const errorMessage = computed(() => {
         if (request.generalError.value) return request.generalError.value;
+        // Kalit xatosi maydon ostida emas, umumiy banner'da (kalit formasi yashirin bo'lishi mumkin).
+        const keyError = request.errors.value.api_key?.[0];
+        if (keyError) return keyError;
         const current = request.current.value;
         return current?.status === 'failed'
             ? (current.error ?? 'Xato yuz berdi.')

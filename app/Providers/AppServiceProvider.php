@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\TryOn\Contracts\TryOnProvider;
 use App\TryOn\Providers\MockProvider;
+use App\TryOn\Providers\OpenAiProvider;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -22,9 +23,9 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // TryOnProvider interfeysi → config('tryon.provider') bo'yicha implementatsiya.
-        // 'openai' 11-taskda qo'shiladi.
         $this->app->bind(TryOnProvider::class, fn (): TryOnProvider => match (config('tryon.provider')) {
             'mock' => new MockProvider,
+            'openai' => new OpenAiProvider,
             default => throw new InvalidArgumentException('Noma\'lum TRYON_PROVIDER: '.config('tryon.provider')),
         });
     }
