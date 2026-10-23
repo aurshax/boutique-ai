@@ -42,3 +42,6 @@ yarn-error.log
 /boost.json
 /opencode.json
 /opencode.jsonc
+
+# katta original media fayllar (web versiyalari public/media ichida)
+/public/media/_originals
