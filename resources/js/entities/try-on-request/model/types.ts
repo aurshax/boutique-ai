@@ -1,4 +1,4 @@
-// Try-on so'rovi — server holati. Manba: TryOnController::present() (status JSON).
+// A try-on request as the server reports it. Source: TryOnController::present() (status JSON).
 
 export type TryOnStatus =
     | 'queued'
@@ -12,6 +12,8 @@ export type Quality = 'medium' | 'high';
 export type TryOnRequest = {
     id: string;
     status: TryOnStatus;
+    /** Provider that ran the request: 'mock' (free demo) or 'openai'. */
+    provider: string;
     error: string | null;
     result_url: string | null;
     has_photo: boolean;
@@ -22,7 +24,7 @@ export type TryOnRequest = {
     created_at: string | null;
 };
 
-/** POST /try-on/requests tanasi. `sourceRequestId` bo'lsa rasm qayta yuborilmaydi (tkan almashtirish). */
+/** POST /try-on/requests body. With `sourceRequestId` the photo is not re-uploaded (fabric swap). */
 export type CreateTryOnPayload = {
     photo: File | null;
     sourceRequestId: string | null;

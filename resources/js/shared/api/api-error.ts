@@ -1,4 +1,4 @@
-// HTTP xatolari — shared/api ichida yagona tur. UI xabarlari bu yerda emas (ular slice'larda).
+// HTTP errors — one type for shared/api. User-facing messages live in the slices, not here.
 
 export class HttpError extends Error {
     constructor(
@@ -13,7 +13,7 @@ export class HttpError extends Error {
         return this.status === 422;
     }
 
-    /** Laravel 422 javobidagi `errors` (maydon → xabarlar). */
+    /** `errors` from a Laravel 422 response (field → messages). */
     get validationErrors(): ValidationErrors {
         return (
             (this.body as { errors?: ValidationErrors } | null)?.errors ?? {}
@@ -21,7 +21,7 @@ export class HttpError extends Error {
     }
 }
 
-/** Laravel validatsiya xatolari: { photo: ['...'], height_cm: ['...'] } */
+/** Laravel validation errors: { photo: ['...'], height_cm: ['...'] } */
 export type ValidationErrors = Partial<Record<string, string[]>>;
 
 export const isAbortError = (error: unknown): boolean =>

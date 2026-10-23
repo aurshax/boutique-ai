@@ -1,5 +1,5 @@
-// Laravel web route'lariga JSON so'rovlar (fetch). CSRF: Laravel `XSRF-TOKEN` cookie'sini o'qib,
-// `X-XSRF-TOKEN` sarlavhasida qaytaramiz (axios buni avtomatik qiladi, fetch — yo'q).
+// JSON requests to Laravel web routes (fetch). CSRF: read Laravel's `XSRF-TOKEN` cookie and send it back
+// as the `X-XSRF-TOKEN` header (axios does this automatically, fetch does not).
 import { HttpError } from './api-error';
 
 export type RequestOptions = {
@@ -16,7 +16,7 @@ export function readXsrfToken(
     return match ? decodeURIComponent(match[1]) : null;
 }
 
-/** 204 → null; 4xx/5xx → HttpError; tarmoq xatosi → TypeError; bekor qilinsa → AbortError. */
+/** 204 → null; 4xx/5xx → HttpError; network failure → TypeError; aborted → AbortError. */
 export async function requestJson<T>(
     url: string,
     options: RequestOptions = {},

@@ -32,7 +32,7 @@ class CatalogSchemaTest extends TestCase
         $this->assertSame(10, Look::count());
         $this->assertSame(8, Fabric::count());
         $this->assertSame(22, Product::count());
-        // Inglizcha vizual tavsif — rasm generatsiyasi va try-on prompti uchun
+        // Visual description — used for image generation and the try-on prompt
         $this->assertSame(0, Product::whereNull('description')->count());
     }
 
@@ -73,7 +73,7 @@ class CatalogSchemaTest extends TestCase
         $this->assertEquals(new IntRange(168, 182), $chart->height_cm);
         $this->assertEquals(new IntRange(81, 86), $chart->waist_cm);
 
-        // Postgres kanonik ko'rinishi: yuqori chegara kirmaydi.
+        // Postgres canonical form: the upper bound is exclusive.
         $raw = DB::table('size_charts')->where('id', $chart->id)->value('height_cm');
         $this->assertSame('[168,183)', $raw);
     }
@@ -130,7 +130,7 @@ class CatalogSchemaTest extends TestCase
         $this->assertTrue(\Illuminate\Support\Str::isUuid($request->id));
         $this->assertSame('queued', $request->fresh()?->status->value);
 
-        // jsonb containment (GIN indeks bilan ishlaydi)
+        // jsonb containment (served by the GIN index)
         $this->assertSame(1, TryOnRequest::whereRaw("params @> '{\"quality\":\"medium\"}'::jsonb")->count());
     }
 }

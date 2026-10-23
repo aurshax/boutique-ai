@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// Uslub tablari va look kartochkalari. Tanlangan look tikuv chizig'i (dashed) bilan o'raladi,
-// faol tab ostidagi pill `layout-id` bilan siljiydi.
+// Style tabs and look cards. The selected look gets a dashed "stitch" border;
+// the pill under the active tab slides across with `layout-id`.
 import { motion } from 'motion-v';
 import { computed } from 'vue';
 import {
@@ -9,9 +9,11 @@ import {
     productsWithImages,
 } from '@/entities/catalog';
 import type { Style } from '@/entities/catalog';
+import { useI18n } from '@/shared/i18n';
 import { formatUzs } from '@/shared/lib/format';
 
 const props = defineProps<{ styles: Style[] }>();
+const { t } = useI18n();
 const styleId = defineModel<number>('styleId', { required: true });
 const lookId = defineModel<number>('lookId', { required: true });
 
@@ -24,11 +26,11 @@ const looks = computed(
     <div class="flex flex-col gap-5">
         <div class="flex flex-wrap items-end justify-between gap-4">
             <h2 id="look-title" class="font-display text-[38px] font-medium">
-                Uslub va look
+                {{ t('tryOn.look.title') }}
             </h2>
             <div
                 role="tablist"
-                aria-label="Uslublar"
+                :aria-label="t('tryOn.look.styles')"
                 class="flex flex-wrap gap-1.5 rounded-full bg-white p-1.5"
             >
                 <button
@@ -82,12 +84,12 @@ const looks = computed(
                     <span
                         v-if="look.is_suit"
                         class="ml-auto rounded-full border border-line px-2.5 py-1 text-xs text-slate"
-                        >Kostyum</span
+                        >{{ t('tryOn.look.suit') }}</span
                     >
                     <span
                         v-if="look.id === lookId"
                         class="rounded-full bg-chalk-soft px-2.5 py-1 text-xs font-semibold text-[#7A5A12]"
-                        >Tanlangan</span
+                        >{{ t('tryOn.look.selected') }}</span
                     >
                 </span>
                 <span
@@ -124,9 +126,11 @@ const looks = computed(
                     <span class="text-sm leading-relaxed text-slate">{{
                         lookSummary(look)
                     }}</span>
-                    <span class="font-mono text-sm"
-                        >{{ formatUzs(look.total_price_uzs) }} so'm</span
-                    >
+                    <span class="font-mono text-sm">{{
+                        t('common.uzs', {
+                            amount: formatUzs(look.total_price_uzs),
+                        })
+                    }}</span>
                 </template>
             </motion.button>
         </div>

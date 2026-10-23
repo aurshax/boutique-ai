@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Mahsulotning kichik rasmi (katalog: oq fon). Rasm hali yo'q bo'lsa — tur nomining bosh harfi.
+// Small product image (catalogue style: white background). Shows the type's initial until an image exists.
 import type { Product } from '../model/types';
 
 withDefaults(

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * Uslub: Classic, Office, Smart Casual ...
+ * Style group: Classic, Office, Smart Casual ...
  *
  * @property int $id
  * @property string $slug

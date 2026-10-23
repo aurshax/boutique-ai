@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from '@/shared/i18n';
 import Reveal from '@/shared/ui/Reveal.vue';
-import { TRUST_ITEMS } from '../model/content';
+import { TRUST_ICONS } from '../model/content';
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -12,20 +15,22 @@ import { TRUST_ITEMS } from '../model/content';
             class="grid gap-10 rounded-3xl bg-ink-2 p-8 md:grid-cols-3 md:p-14"
         >
             <div
-                v-for="item in TRUST_ITEMS"
-                :key="item.title"
+                v-for="(icon, i) in TRUST_ICONS"
+                :key="i"
                 class="flex flex-col gap-3"
             >
                 <component
-                    :is="item.icon"
+                    :is="icon"
                     aria-hidden="true"
                     :size="28"
                     :stroke-width="1.6"
                     class="text-chalk"
                 />
-                <h3 class="text-xl font-semibold">{{ item.title }}</h3>
+                <h3 class="text-xl font-semibold">
+                    {{ t(`home.trust.items.${i}.title`) }}
+                </h3>
                 <p class="text-[15px] leading-relaxed text-fog">
-                    {{ item.text }}
+                    {{ t(`home.trust.items.${i}.text`) }}
                 </p>
             </div>
         </Reveal>

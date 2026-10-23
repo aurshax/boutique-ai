@@ -12,21 +12,21 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Spike uchun: bitta mavjud so'rovning rasmi va look'i bilan bir nechta modelni yonma-yon sinash.
- * Natijalar storage/app/private/compare/{request_id}/ ga yoziladi. HAR MODEL — HAQIQIY PUL.
+ * Spike tool: run several models side by side on one existing request's photo and look.
+ * Results go to storage/app/private/compare/{request_id}/. EVERY MODEL COSTS REAL MONEY.
  *
  *   sail artisan try-on:compare {id} --model=gpt-image-2.5-sunburst --model=gpt-image-1.5:high
  *
- * Kalit argument sifatida berilmaydi (shell tarixida qolmasin) — yashirin so'raladi.
+ * The key is never an argument (it would stay in shell history) — it is asked for as a hidden secret.
  */
 class CompareTryOnModels extends Command
 {
     protected $signature = 'try-on:compare
-        {request : try_on_requests.id (oxirgisi uchun "latest")}
-        {--model=* : model yoki model:input_fidelity, masalan gpt-image-1.5:high}
+        {request : try_on_requests.id ("latest" for the most recent)}
+        {--model=* : model or model:input_fidelity, e.g. gpt-image-1.5:high}
         {--quality=medium : low|medium|high}';
 
-    protected $description = 'Bitta try-on so\'rovini bir nechta OpenAI modelida solishtirish (pullik)';
+    protected $description = 'Compare several OpenAI models on one try-on request (paid)';
 
     public function handle(PromptBuilder $prompts, ImageService $images): int
     {
@@ -35,7 +35,7 @@ class CompareTryOnModels extends Command
             : TryOnRequest::with(['look.products', 'fabric'])->find($this->argument('request'));
 
         if ($request === null || $request->upload_path === null || $request->look === null) {
-            $this->error('So\'rov topilmadi yoki uning rasmi o\'chirilgan (24 soatdan keyin o\'chadi).');
+            $this->error('Request not found or its photo was deleted (photos are kept for 24 hours).');
 
             return self::FAILURE;
         }
@@ -43,10 +43,10 @@ class CompareTryOnModels extends Command
         $models = $this->option('model') ?: [(string) config('tryon.openai.model')];
         $quality = (string) $this->option('quality');
 
-        $this->warn(sprintf('%d ta generatsiya, sifat: %s — har biri OpenAI hisobingizdan to\'lanadi.', count($models), $quality));
-        $key = (string) $this->secret('OpenAI API kaliti');
+        $this->warn(sprintf('%d generation(s), quality: %s — each one is billed to your OpenAI account.', count($models), $quality));
+        $key = (string) $this->secret('OpenAI API key');
         if (! str_starts_with($key, 'sk-')) {
-            $this->error('Kalit sk- bilan boshlanishi kerak.');
+            $this->error('The key must start with sk-.');
 
             return self::FAILURE;
         }
@@ -54,7 +54,7 @@ class CompareTryOnModels extends Command
         $built = $prompts->build($request->look, $request->fabric, $request->height_cm);
         $person = $images->read($request->upload_path);
         $dir = "compare/{$request->id}";
-        Storage::disk('local')->put("{$dir}/0-original.jpg", $person);
+        Storage::disk('local')->put("{$dir}/0-original.jpg", $person);   // dev tool: always the local disk
 
         $rows = [];
         foreach ($models as $spec) {
@@ -71,7 +71,7 @@ class CompareTryOnModels extends Command
                     quality: $quality,
                 ));
             } catch (TryOnProviderException $e) {
-                $rows[] = [$spec, 'XATO', '-', '-', $e->getMessage()];
+                $rows[] = [$spec, 'ERROR', '-', '-', $e->getMessage()];
 
                 continue;
             }
@@ -87,7 +87,7 @@ class CompareTryOnModels extends Command
             ];
         }
 
-        $this->table(['Model', 'Vaqt', 'Narx', 'Tokenlar (kirish / chiqish)', 'Fayl'], $rows);
+        $this->table(['Model', 'Time', 'Cost', 'Tokens (in / out)', 'File'], $rows);
 
         return self::SUCCESS;
     }

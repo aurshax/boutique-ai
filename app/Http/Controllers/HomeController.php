@@ -8,7 +8,7 @@ use App\Models\Style;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** Bosh sahifa: uslublar (look soni, eng arzon look narxi) va tkanlar vitrinasi — katalogdan, qo'lda yozilmagan. */
+/** Home page: styles (look count, cheapest look) and the fabric showcase — all from the catalogue, nothing hard-coded. */
 class HomeController extends Controller
 {
     public function __invoke(): Response
@@ -29,7 +29,7 @@ class HomeController extends Controller
             ->whereNotNull('swatch_image')
             ->withMin('products as min_extra_uzs', 'product_fabric.extra_price_uzs')
             ->orderBy('id')
-            ->limit(3)                       // Home vitrinasi 3 ta kartaga mo'ljallangan (FabricShowcase)
+            ->limit(3)                       // the Home showcase is designed for 3 cards (FabricShowcase)
             ->get()
             ->map(fn (Fabric $fabric) => [
                 'slug' => $fabric->slug,

@@ -1,4 +1,4 @@
-// Public API — slice tashqarisiga faqat shu fayl orqali.
+// Public API — the only entry point into this slice from other slices.
 export type {
     Fabric,
     FabricCard,

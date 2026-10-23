@@ -3,9 +3,9 @@
 namespace App\TryOn\Support;
 
 /**
- * OpenAI javobidagi `usage` dan haqiqiy narxni hisoblaydi (USD).
- * Narxlar — config('tryon.openai.pricing'), 1M token uchun. Natija decimal satr ("0.0512"):
- * float yig'indisi DB'ga yozilganda yaxlitlash xatosi to'planmasin.
+ * Computes the real cost (USD) from the `usage` block of an OpenAI response.
+ * Prices come from config('tryon.openai.pricing'), per 1M tokens. Returns a decimal string ("0.0512")
+ * so float rounding errors never accumulate in the database.
  */
 final class ImageCost
 {
@@ -23,7 +23,7 @@ final class ImageCost
         $textIn = (int) ($details['text_tokens'] ?? 0);
         $imageIn = (int) ($details['image_tokens'] ?? 0);
 
-        // Batafsil bo'linma bo'lmasa — butun kirishni rasm narxida hisoblaymiz (yuqori baho, kam emas).
+        // No breakdown given — price all input at the image rate (overestimate rather than underestimate).
         if ($textIn === 0 && $imageIn === 0) {
             $imageIn = (int) ($usage['input_tokens'] ?? 0);
         }

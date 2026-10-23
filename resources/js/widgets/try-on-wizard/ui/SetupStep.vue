@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// 1-qadam: kalit (OpenAI rejimida), rasm, bo'y, bel, razmer, rozilik, look va tkan.
-// Container: holat injectTryOnFlow() dan, ko'rinish — features/* komponentlari.
+// Step 1: API key (real-AI modes), photo, height, waist, size, consent, look and fabric.
+// Container: state from injectTryOnFlow(), presentation from features/* components.
 import { computed } from 'vue';
 import { fabricScope } from '@/entities/catalog';
 import { ApiKeyForm } from '@/features/byok-api-key';
@@ -8,11 +8,13 @@ import { HeightTape, SizePicker } from '@/features/enter-measurements';
 import { FabricSwatches } from '@/features/select-fabric';
 import { LookPicker } from '@/features/select-look';
 import { PhotoDrop } from '@/features/upload-photo';
+import { useI18n } from '@/shared/i18n';
 import InputError from '@/shared/ui/InputError.vue';
 import { injectTryOnFlow } from '../model/useTryOnFlow';
 
-const { page, form, apiKey, keyReady, fieldError } = injectTryOnFlow();
-// Top-level ref'lar — template'da avtomatik unwrap bo'ladi va v-model bilan ishlaydi.
+const { t } = useI18n();
+const { page, form, apiKey, usesRealAi, fieldError } = injectTryOnFlow();
+// Top-level refs — auto-unwrapped in the template and usable with v-model.
 const {
     photoUrl,
     heightCm,
@@ -27,7 +29,7 @@ const {
     setPhoto,
 } = form;
 const scope = computed(() => fabricScope(look.value));
-const { remembered, save: saveKey } = apiKey;
+const { remembered, isValid: keyValid, save: saveKey } = apiKey;
 </script>
 
 <template>
@@ -35,7 +37,8 @@ const { remembered, save: saveKey } = apiKey;
         class="mx-auto flex max-w-[1360px] flex-wrap items-start gap-8 px-5 py-8 md:px-10 md:py-10"
     >
         <ApiKeyForm
-            v-if="!keyReady"
+            v-if="page.keyMode !== 'none' && !keyValid"
+            :mode="page.keyMode"
             :estimate="page.estimateUsd"
             :initial-remember="remembered"
             @save="saveKey"
@@ -46,7 +49,7 @@ const { remembered, save: saveKey } = apiKey;
             class="flex max-w-[460px] flex-[1_1_380px] flex-col gap-5"
         >
             <h1 id="you-title" class="font-display text-[38px] font-medium">
-                Siz
+                {{ t('tryOn.you.title') }}
             </h1>
             <PhotoDrop
                 :preview-url="photoUrl"
@@ -62,7 +65,7 @@ const { remembered, save: saveKey } = apiKey;
                     <label
                         class="flex flex-[1_1_140px] flex-col gap-1.5 text-sm text-slate"
                     >
-                        Bel (sm), ixtiyoriy
+                        {{ t('tryOn.you.waist') }}
                         <input
                             v-model.number="waistCm"
                             type="number"
@@ -92,14 +95,11 @@ const { remembered, save: saveKey } = apiKey;
                     type="checkbox"
                     class="mt-0.5 size-5 accent-ink"
                 />
-                <span>
-                    Rasmim AI'ga (OpenAI) yuborilishiga{{
-                        page.requiresApiKey
-                            ? " va mening kalitimdan to'lanishiga"
-                            : ''
-                    }}
-                    roziman. Rasm 24 soatda o'chiriladi.
-                </span>
+                <span>{{
+                    usesRealAi
+                        ? t('tryOn.you.consentAi')
+                        : t('tryOn.you.consentDemo')
+                }}</span>
             </label>
             <InputError :message="fieldError('consent')" class="-mt-3" />
         </section>
@@ -120,7 +120,7 @@ const { remembered, save: saveKey } = apiKey;
                 <FabricSwatches
                     v-model="fabricId"
                     :fabrics="fabrics"
-                    :label="scope.label"
+                    :label="t(scope.labelKey)"
                 />
                 <InputError :message="fieldError('fabric_id')" />
             </div>

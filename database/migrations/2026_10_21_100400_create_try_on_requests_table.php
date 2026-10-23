@@ -11,18 +11,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('try_on_requests', function (Blueprint $table) {
-            $table->uuid('id')->primary();               // URL'da ko'rinadi — taxmin qilib bo'lmasligi uchun UUID
+            $table->uuid('id')->primary();               // visible in URLs — a UUID so it cannot be guessed
             $table->string('status', 16)->default(TryOnStatus::Queued->value);
             $table->foreignId('look_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('fabric_id')->nullable()->constrained()->nullOnDelete();
 
             $table->smallInteger('height_cm');
             $table->smallInteger('waist_cm')->nullable();
-            $table->string('size', 8)->nullable();        // mijoz aytgan odatdagi razmer
+            $table->string('size', 8)->nullable();        // the customer's usual size
 
-            $table->jsonb('params')->default('{}');       // look tarkibi, quality, o'lcham va h.k.
+            $table->jsonb('params')->default('{}');       // look contents, quality, size, etc.
             $table->string('prompt_version', 32);
-            $table->string('provider', 32);               // mock | openai
+            $table->string('provider', 32);               // mock | openai (the provider that actually ran)
             $table->string('model', 64)->nullable();
 
             $table->string('upload_path')->nullable();    // private/uploads/...
@@ -34,7 +34,7 @@ return new class extends Migration
             $table->timestamp('finished_at')->nullable();
             $table->timestamps();
 
-            // Eslatma: OpenAI kaliti, mijoz ismi yoki telefoni bu jadvalda YO'Q — ataylab.
+            // Note: there is deliberately NO OpenAI key, customer name or phone in this table.
         });
 
         $statuses = "'".implode("','", TryOnStatus::values())."'";
@@ -43,11 +43,11 @@ return new class extends Migration
         DB::statement('ALTER TABLE try_on_requests ADD CONSTRAINT try_on_waist_check CHECK (waist_cm IS NULL OR waist_cm BETWEEN 50 AND 160)');
         DB::statement('ALTER TABLE try_on_requests ADD CONSTRAINT try_on_cost_check CHECK (cost_usd IS NULL OR cost_usd >= 0)');
 
-        // Partial index: faqat kutilayotgan so'rovlar indekslanadi — kichik va tez.
+        // Partial index: only pending requests are indexed — small and fast.
         DB::statement("CREATE INDEX try_on_requests_queued_idx ON try_on_requests (created_at) WHERE status = 'queued'");
-        // TTL tozalash uchun: tugagan so'rovlarni yaratilgan sanasi bo'yicha topish.
+        // For TTL cleanup: find finished requests by creation date.
         DB::statement("CREATE INDEX try_on_requests_finished_idx ON try_on_requests (created_at) WHERE status IN ('done','failed','cancelled')");
-        // GIN indeks: params ichidan qidirish, masalan params @> '{"quality":"high"}'
+        // GIN index: search inside params, e.g. params @> '{"quality":"high"}'
         DB::statement('CREATE INDEX try_on_requests_params_gin ON try_on_requests USING gin (params jsonb_path_ops)');
     }
 

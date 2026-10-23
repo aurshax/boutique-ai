@@ -7,11 +7,11 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Mijozning OpenAI kalitini (BYOK) `X-OpenAI-Key` sarlavhasidan oladi va DARHOL so'rovdan o'chiradi.
+ * Takes the customer's OpenAI key (BYOK) from the `X-OpenAI-Key` header and removes it from the request at once.
  *
- * Nima uchun: APP_DEBUG=true da Laravel xato sahifasi so'rov sarlavhalarini ko'rsatadi,
- * log va monitoring vositalari ham sarlavhalarni yozishi mumkin. Kalit faqat
- * request attributes ichida qoladi va TryOnJob ga (shifrlangan) uzatiladi.
+ * Why: with APP_DEBUG=true Laravel's error page shows request headers, and loggers or monitoring
+ * tools may record them too. The key only lives in request attributes and is handed to TryOnJob
+ * (whose payload is encrypted).
  */
 class ExtractOpenAiKey
 {

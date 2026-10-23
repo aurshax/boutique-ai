@@ -8,11 +8,11 @@ use App\Models\Product;
 use App\TryOn\Data\ReferenceImage;
 
 /**
- * Promptni FAQAT server tomonda, katalog ma'lumotlaridan quradi.
- * Foydalanuvchi prompt matnini yozmaydi — prompt injection uchun joy yo'q.
+ * Builds the prompt on the SERVER only, from catalogue data.
+ * The user never writes prompt text — there is no room for prompt injection.
  *
- * Versiya: config('tryon.prompt_version'). Shablon o'zgarsa — versiyani oshiring,
- * shunda eski va yangi natijalarni solishtirish mumkin bo'ladi.
+ * Version: config('tryon.prompt_version'). Bump it whenever the template changes,
+ * so old and new results can be compared.
  */
 class PromptBuilder
 {
@@ -25,7 +25,7 @@ class PromptBuilder
 
         $references = [];
         $garmentLines = [];
-        $imageNo = 2;   // 1-rasm — mijozning o'zi
+        $imageNo = 2;   // image 1 is the customer
 
         foreach ($look->products as $product) {
             $line = '- '.$this->describe($product, $look->followsFabric($product) ? $fabric : null);
@@ -48,7 +48,7 @@ class PromptBuilder
                 : 'The trousers must be made of this fabric';
             $fabricLine = "{$target}: {$fabric->name} — {$fabric->composition}, "
                 ."pattern: {$fabric->pattern->value}, main colour {$fabric->color_hex}."
-                // Katalog rasmi standart tkanda — boshqa tkan tanlansa, rasm faqat bichim uchun.
+                // Catalogue photos show the default fabric — with another fabric they only define the cut.
                 .' Garment images show the cut and style only; take colour and pattern for these pieces from the fabric description.';
             if ($swatch !== null) {
                 $references[] = new ReferenceImage($swatch, 'fabric swatch', "fabric-{$fabric->id}.jpg");
@@ -56,8 +56,8 @@ class PromptBuilder
             }
         }
 
-        // v2: kiyimdan boshqa hamma narsani "qulflash" — yuz, poza, kadr, fon (v1 yuzni qayta chizardi).
-        // v3: model kostyum kiygizganda odamni "ozdirardi" (yonoq, qorin) — gavda va yuz to'liqligi alohida qulf.
+        // v2: lock everything except the clothes — face, pose, framing, background (v1 redrew the face).
+        // v3: the model used to slim people down (cheeks, belly) when dressing them — lock body and face fullness.
         $prompt = implode("\n", array_filter([
             'Virtual try-on for a menswear shop. This is a clothing-only edit of image 1, not a new photo.',
             'Image 1 is the customer. Keep his face, identity, hair, skin tone, body shape, pose and the background exactly as they are.',
@@ -78,17 +78,17 @@ class PromptBuilder
 
     private function describe(Product $product, ?Fabric $fabric): string
     {
-        // Inglizcha vizual tavsif (seeder) bo'lsa — u; aks holda o'zbekcha nom.
+        // The English visual description (seeder) when present, otherwise the product name.
         $text = "{$product->type->value}: ".($product->description ?: $product->name);
 
-        if ($fabric !== null) {   // tkan faqat unga bog'liq mahsulotlar uchun beriladi (Look::followsFabric)
+        if ($fabric !== null) {   // passed only for products the fabric applies to (Look::followsFabric)
             $text .= " (in {$fabric->name})";
         }
 
         return $text;
     }
 
-    /** public/media/... ichidagi rasm (catalog_media_path). Rasm hali yo'q bo'lsa — null, matnli tavsif ishlatiladi. */
+    /** An image under public/media/... (catalog_media_path). Null when it does not exist yet — the text description is used instead. */
     private function publicImage(?string $relative): ?string
     {
         if ($relative === null || str_contains($relative, '..')) {

@@ -1,5 +1,5 @@
-// File → blob: URL (rasm preview). Fayl almashganda yoki scope yopilganda eski URL bo'shatiladi
-// (URL.revokeObjectURL) — aks holda brauzer xotirasida qolib ketadi.
+// File → blob: URL (image preview). The old URL is released (URL.revokeObjectURL) when the file changes
+// or the scope is disposed — otherwise it would leak browser memory.
 import { getCurrentScope, onScopeDispose, readonly, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 

@@ -1,9 +1,9 @@
-// Try-on sahifasining qadamlar mashinasi. UI qaysi ekranni ko'rsatishi faqat shu yerda hal qilinadi.
+// The try-on step machine. Which screen the UI shows is decided here and nowhere else.
 //
 //   setup ──submit(202)──▶ waiting ──status=done──▶ result
 //     ▲                      │                        │
-//     └──status=failed/cancelled                      ├──"Boshqa look"──▶ setup
-//                                                     └──tkan almashtirish (202)──▶ waiting
+//     └──status=failed/cancelled                      ├──"Another look"──▶ setup
+//                                                     └──fabric swap (202)──▶ waiting
 import type { TryOnStatus } from '@/entities/try-on-request';
 
 export type Step = 'setup' | 'waiting' | 'result';
@@ -23,7 +23,7 @@ export function transition(step: Step, event: FlowEvent): Step {
                 return step === 'waiting' ? 'result' : step;
             if (event.status === 'failed' || event.status === 'cancelled')
                 return 'setup';
-            return step; // queued/running — holat o'zgarmaydi
+            return step; // queued/running — no change
         case 'edit':
             return step === 'result' ? 'setup' : step;
         case 'reset':
@@ -31,8 +31,9 @@ export function transition(step: Step, event: FlowEvent): Step {
     }
 }
 
-export const STEP_LABELS: Record<Step, string> = {
-    setup: '1 · Siz va look',
-    waiting: '2 · Tikilmoqda',
-    result: '3 · Natija',
+/** i18n keys for the step indicator. */
+export const STEP_LABEL_KEYS: Record<Step, string> = {
+    setup: 'tryOn.steps.setup',
+    waiting: 'tryOn.steps.waiting',
+    result: 'tryOn.steps.result',
 };

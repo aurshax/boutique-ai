@@ -1,6 +1,6 @@
-// Katalog: Style → Look → Product → Fabric. Bitta agregat (backend uni bitta prop sifatida beradi),
-// shuning uchun bitta entity slice — alohida product/fabric slice'lari bir-birini import qilishga majbur bo'lardi.
-// Manba: TryOnController::create() va HomeController. Backend shakli o'zgarsa — shu fayl ham.
+// Catalogue: Style → Look → Product → Fabric. One aggregate (the backend sends it as a single prop),
+// hence one entity slice — separate product/fabric slices would have to import each other.
+// Source: TryOnController::create() and HomeController. When the backend shape changes, so does this file.
 
 export type ProductType =
     | 'trousers'
@@ -26,16 +26,16 @@ export type Product = {
     type_label: string;
     name: string;
     price_uzs: number;
-    /** '/media/catalog/...webp' yoki null (rasm hali generatsiya qilinmagan) */
+    /** '/media/catalog/...webp' or null (image not generated yet) */
     image: string | null;
-    /** Shim va blazer uchun mumkin bo'lgan tkanlar (ustama — shu mahsulot uchun); boshqalarda bo'sh. */
+    /** Fabrics available for trousers and blazers (surcharge is per product); empty for other types. */
     fabrics: Fabric[];
 };
 
 export type Look = {
     id: number;
     name: string;
-    /** Pidjak va shim bir matodan (kostyum) — tanlangan tkan ikkalasiga qo'llanadi. */
+    /** Jacket and trousers share one fabric (a suit) — the chosen fabric applies to both. */
     is_suit: boolean;
     total_price_uzs: number;
     products: Product[];
@@ -49,7 +49,7 @@ export type Style = {
     looks: Look[];
 };
 
-/** Home sahifasi vitrinasi (HomeController) — to'liq katalog emas, kartochka uchun qisqa shakl. */
+/** Home page showcase (HomeController) — not the full catalogue, a compact card shape. */
 export type StyleCard = {
     slug: string;
     name: string;

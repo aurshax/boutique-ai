@@ -9,9 +9,9 @@ use App\TryOn\Exceptions\TryOnProviderException;
 use GdImage;
 
 /**
- * Development uchun soxta provider — API'ga pul ketmaydi.
- * Mijoz rasmini oladi, pastki qismiga to'q ko'k "shim" tasmasini va "MOCK" yozuvini chizadi.
- * Kechikish (config tryon.mock.delay_seconds) kutish animatsiyasini sinash uchun.
+ * Fake provider for development and the public demo — no API calls, no cost.
+ * Takes the customer photo and paints a navy "trousers" band and a "MOCK TRY-ON" label on it.
+ * The delay (config tryon.mock.delay_seconds) lets you test the waiting animation.
  */
 class MockProvider implements TryOnProvider
 {
@@ -29,13 +29,13 @@ class MockProvider implements TryOnProvider
 
         $image = @imagecreatefromstring($input->personImage);
         if (! $image instanceof GdImage) {
-            throw new TryOnProviderException('Mock: mijoz rasmini o\'qib bo\'lmadi.');
+            throw new TryOnProviderException(__('tryon.image.unreadable'));
         }
 
         $w = imagesx($image);
         $h = imagesy($image);
 
-        // Pastki 45% ni yarim shaffof to'q ko'k bilan bo'yaymiz — "shim" o'rnida.
+        // Paint the bottom 45% semi-transparent navy — stands in for the trousers.
         $navy = imagecolorallocatealpha($image, 31, 42, 68, 50);
         if ($navy !== false) {
             imagefilledrectangle($image, 0, (int) ($h * 0.55), $w, $h, $navy);

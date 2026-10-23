@@ -1,23 +1,25 @@
 <script setup lang="ts">
 /**
- * Home hero: fon video (desktop gorizontal, mobil vertikal), sekin zoom, so'zma-so'z sarlavha,
- * sichqoncha bilan parallax. prefers-reduced-motion bo'lsa — video o'rniga poster, harakat yo'q.
+ * Home hero: background video (landscape on desktop, portrait on mobile), slow zoom, word-by-word
+ * title, pointer parallax. With prefers-reduced-motion: a poster instead of the video, no motion.
  */
 import { Link } from '@inertiajs/vue3';
 import { useMediaQuery } from '@vueuse/core';
 import { motion, useReducedMotion } from 'motion-v';
 import { computed, ref } from 'vue';
 import { create as tryOn } from '@/routes/try-on';
+import { useI18n } from '@/shared/i18n';
 import { usePointerParallax } from '@/shared/lib/composables/usePointerParallax';
 import TapeMeasure from '@/shared/ui/TapeMeasure.vue';
 import { Button } from '@/shared/ui/button';
 import { HERO_MEDIA, TAPE_MARKS } from '../model/media';
 
-/** estimate — tayyor matn, masalan "$0.05–0.09" (shared/lib/format → formatUsdRange). */
+/** estimate — preformatted text, e.g. "$0.05–0.09" (shared/lib/format → formatUsdRange). */
 const props = defineProps<{ estimate: string }>();
 
-const title = "Kostyumni sotib olishdan oldin — o'zingizda ko'ring.";
-const words = title.split(' ');
+const { t } = useI18n();
+const title = computed(() => t('home.hero.title'));
+const words = computed(() => title.value.split(' '));
 
 const reduceMotion = useReducedMotion();
 const isMobile = useMediaQuery('(max-width: 767px)');
@@ -36,7 +38,7 @@ const video = computed(() =>
         class="relative flex min-h-[100svh] flex-col justify-end overflow-hidden md:min-h-[860px]"
         @pointermove="onPointerMove"
     >
-        <!-- Fon: video yoki poster -->
+        <!-- Background: video or poster -->
         <div
             class="absolute inset-[-16px] transition-transform duration-300 ease-out"
             style="
@@ -87,7 +89,7 @@ const video = computed(() =>
             </motion.div>
         </div>
 
-        <!-- O'qilishi uchun qatlam: desktop chapdan, mobil pastdan -->
+        <!-- Legibility scrim: from the left on desktop, from the bottom on mobile -->
         <div
             class="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,38,0.5)_0%,rgba(15,23,38,0.1)_30%,rgba(15,23,38,0.92)_72%,#0f1726_100%)] md:bg-[linear-gradient(90deg,rgba(15,23,38,0.94)_0%,rgba(15,23,38,0.78)_38%,rgba(15,23,38,0.15)_72%)]"
             aria-hidden="true"
@@ -109,7 +111,7 @@ const video = computed(() =>
                 :animate="{ opacity: 1 }"
                 :transition="{ duration: 0.6 }"
             >
-                Virtual primerka · erkaklar kostyumi
+                {{ t('home.hero.eyebrow') }}
             </motion.p>
 
             <h1
@@ -146,9 +148,7 @@ const video = computed(() =>
                     duration: 0.6,
                 }"
             >
-                Rasmingizni yuklang va uslubni tanlang. Shim, ko'ylak va
-                aksessuarlar bo'yingizga moslab kiyintiriladi — istagan
-                tkaningizda.
+                {{ t('home.hero.lead') }}
             </motion.p>
 
             <motion.div
@@ -161,7 +161,7 @@ const video = computed(() =>
                 }"
             >
                 <Button as-child variant="chalk" size="pill-lg">
-                    <Link :href="tryOn()">Kiyinib ko'ring</Link>
+                    <Link :href="tryOn()">{{ t('home.hero.cta') }}</Link>
                 </Button>
                 <Button
                     as-child
@@ -169,13 +169,12 @@ const video = computed(() =>
                     size="pill-lg"
                     class="hidden sm:inline-flex"
                 >
-                    <a href="#how">Qanday ishlaydi</a>
+                    <a href="#how">{{ t('home.hero.how') }}</a>
                 </Button>
                 <span
                     class="text-center text-[13px] text-fog sm:ml-1.5 sm:text-left sm:text-sm"
                 >
-                    Bitta look ≈ {{ props.estimate }}, o'z OpenAI kalitingiz
-                    bilan
+                    {{ t('home.hero.estimate', { estimate: props.estimate }) }}
                 </span>
             </motion.div>
         </div>

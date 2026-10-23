@@ -10,9 +10,9 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Yangi try-on so'rovi validatsiyasi.
- * Ikki rejim: yangi rasm (`photo`) yoki oldingi so'rovning rasmini qayta ishlatish
- * (`source_request_id`) — tkan almashtirishda mijoz rasmni qayta yuklamaydi.
+ * Validation for a new try-on request.
+ * Two modes: a new photo (`photo`) or reuse of a previous request's photo
+ * (`source_request_id`) — so a fabric swap does not make the customer upload again.
  */
 class CreateTryOnRequest extends FormRequest
 {
@@ -21,7 +21,7 @@ class CreateTryOnRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;   // login yo'q; egalik session orqali tekshiriladi
+        return true;   // no login; ownership is checked through the session
     }
 
     /** @return array<string, mixed> */
@@ -50,16 +50,17 @@ class CreateTryOnRequest extends FormRequest
                     return;
                 }
 
-                // OpenAI rejimida kalit majburiy va formati tekshiriladi (mock'da kerak emas).
-                if (config('tryon.provider') === 'openai') {
-                    $key = $this->attributes->get(ExtractOpenAiKey::ATTRIBUTE);
-                    if (! is_string($key) || ! preg_match('/^sk-[A-Za-z0-9_\-]{20,200}$/', $key)) {
-                        $validator->errors()->add('api_key', 'OpenAI API kaliti kiritilmagan yoki formati noto\'g\'ri.');
-                    }
+                // 'openai' mode: the key is required. 'auto' (demo): optional, but must be valid when given.
+                $mode = config('tryon.provider');
+                $key = $this->attributes->get(ExtractOpenAiKey::ATTRIBUTE);
+                $required = $mode === 'openai';
+                $given = is_string($key) && $key !== '';
+                if (($required || ($mode === 'auto' && $given)) && ! ($given && preg_match('/^sk-[A-Za-z0-9_\-]{20,200}$/', $key))) {
+                    $validator->errors()->add('api_key', __('tryon.validation.api_key'));
                 }
 
-                // Tanlangan tkan shu look'da tkanga bog'liq HAR BIR mahsulot uchun ruxsat etilganmi?
-                // (oddiy look'da — shim, kostyumda — shim va blazer)
+                // Is the chosen fabric available for EVERY product it applies to in this look?
+                // (separates: the trousers; suit: trousers and blazer)
                 $fabricId = $this->integer('fabric_id') ?: null;
                 if ($fabricId !== null) {
                     $look = Look::with('products.fabrics')->find($this->integer('look_id'));
@@ -67,7 +68,7 @@ class CreateTryOnRequest extends FormRequest
                     $hasTrousers = $targets->contains(fn ($p) => $p->type === ProductType::Trousers);
 
                     if (! $hasTrousers || $targets->contains(fn ($p) => ! $p->fabrics->contains('id', $fabricId))) {
-                        $validator->errors()->add('fabric_id', 'Bu tkan tanlangan look uchun mavjud emas.');
+                        $validator->errors()->add('fabric_id', __('tryon.validation.fabric_unavailable'));
                     }
                 }
             },
@@ -78,12 +79,12 @@ class CreateTryOnRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'photo.required_without' => 'Rasm yuklang.',
-            'photo.mimes' => 'Faqat JPEG, PNG yoki WebP rasm.',
-            'photo.max' => 'Rasm 10 MB dan oshmasligi kerak.',
-            'height_cm.between' => 'Bo\'y 120–230 sm oralig\'ida bo\'lishi kerak.',
-            'waist_cm.between' => 'Bel o\'lchami 50–160 sm oralig\'ida bo\'lishi kerak.',
-            'consent.accepted' => 'Rasm OpenAI\'ga yuborilishiga rozilik bering.',
+            'photo.required_without' => __('tryon.validation.photo_required'),
+            'photo.mimes' => __('tryon.image.wrong_type'),
+            'photo.max' => __('tryon.image.too_large', ['mb' => (int) round(config('tryon.upload.max_kb') / 1024)]),
+            'height_cm.between' => __('tryon.validation.height_between'),
+            'waist_cm.between' => __('tryon.validation.waist_between'),
+            'consent.accepted' => __('tryon.validation.consent'),
         ];
     }
 }

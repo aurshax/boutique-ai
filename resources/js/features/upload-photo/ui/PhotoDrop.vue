@@ -1,10 +1,11 @@
 <script setup lang="ts">
 /**
- * Rasm tanlash: bosish yoki sudrab tashlash. Brauzerdagi tekshiruv limitlari backend'dan (props.limits),
- * haqiqiy tekshiruv va tozalash serverda (ImageService). Yangi rasmda skaner chizig'i o'tadi.
+ * Photo picker: click or drag & drop. Browser pre-check limits come from the backend (props.limits);
+ * the real check and sanitising happen on the server (ImageService). A scan line sweeps over a new photo.
  */
 import { motion } from 'motion-v';
 import { computed, ref } from 'vue';
+import { useI18n } from '@/shared/i18n';
 import InputError from '@/shared/ui/InputError.vue';
 import type { UploadLimits } from '../model/types';
 import {
@@ -21,21 +22,24 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ select: [file: File] }>();
 
+const { t } = useI18n();
 const input = ref<HTMLInputElement | null>(null);
 const dragOver = ref(false);
 const localError = ref<string | null>(null);
 const accept = computed(() => acceptAttribute(props.limits));
-const hint = computed(
-    () =>
-        `${describeAllowed(props.limits)}, ${maxMegabytes(props.limits)} MB gacha.`,
+const hint = computed(() =>
+    t('tryOn.photo.hint', {
+        formats: describeAllowed(props.limits, t('tryOn.photo.or')),
+        mb: maxMegabytes(props.limits),
+    }),
 );
 
 function take(file: File | undefined): void {
     localError.value = null;
     if (!file) return;
-    const check = checkUpload(file, props.limits);
+    const check = checkUpload(file, props.limits, t('tryOn.photo.or'));
     if (!check.ok) {
-        localError.value = check.message;
+        localError.value = t(check.messageKey, check.params);
         return;
     }
     emit('select', file);
@@ -49,7 +53,7 @@ function onDrop(event: DragEvent): void {
 function onChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     take(target.files?.[0]);
-    target.value = ''; // bir xil faylni qayta tanlash ham `change` chiqarsin
+    target.value = ''; // so picking the same file again still fires `change`
 }
 </script>
 
@@ -65,7 +69,7 @@ function onChange(event: Event): void {
             <template v-if="previewUrl">
                 <img
                     :src="previewUrl"
-                    alt="Yuklangan rasmingiz"
+                    :alt="t('tryOn.photo.alt')"
                     class="h-full w-full object-cover"
                 />
                 <motion.div
@@ -81,14 +85,14 @@ function onChange(event: Event): void {
                 >
                     <span
                         class="rounded-full bg-ink/80 px-3 py-2 text-[13px] text-[#EDEFF3]"
-                        >Yuborishda GPS va metama'lumot o'chiriladi</span
+                        >{{ t('tryOn.photo.privacy') }}</span
                     >
                     <button
                         type="button"
                         class="rounded-full bg-white px-3.5 py-2 text-[13px] font-semibold text-ink"
                         @click="input?.click()"
                     >
-                        Boshqa rasm
+                        {{ t('tryOn.photo.replace') }}
                     </button>
                 </div>
             </template>
@@ -113,12 +117,10 @@ function onChange(event: Event): void {
                     <path d="M12 16V4M7 9l5-5 5 5" />
                     <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
                 </svg>
-                <span class="text-base font-semibold text-ink"
-                    >Rasm yuklang yoki shu yerga tashlang</span
-                >
-                <span class="max-w-[260px] text-sm"
-                    >To'liq bo'yli, old tomondan, yorug' joyda. {{ hint }}</span
-                >
+                <span class="text-base font-semibold text-ink">{{
+                    t('tryOn.photo.empty')
+                }}</span>
+                <span class="max-w-[260px] text-sm">{{ hint }}</span>
             </button>
 
             <input
@@ -126,7 +128,7 @@ function onChange(event: Event): void {
                 type="file"
                 :accept="accept"
                 class="sr-only"
-                aria-label="Rasm tanlash"
+                :aria-label="t('tryOn.photo.inputLabel')"
                 @change="onChange"
             />
         </div>

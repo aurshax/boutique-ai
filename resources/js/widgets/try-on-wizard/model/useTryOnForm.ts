@@ -1,5 +1,5 @@
-// Try-on formasining holati va undan hosil bo'ladigan qiymatlar (tanlangan look, shim tkanlari, narx).
-// Hisob-kitob entities/catalog da (pure, test qilingan) — bu yerda faqat Vue reaktivligi.
+// Try-on form state and the values derived from it (selected look, available fabrics, price).
+// The maths lives in entities/catalog (pure, unit tested) — this file is only Vue reactivity.
 import { computed, ref, watch } from 'vue';
 import {
     defaultFabricId,
@@ -39,7 +39,7 @@ export function useTryOnForm(
     const fabric = computed(() => findFabric(look.value, fabricId.value));
     const total = computed(() => lookTotal(look.value, fabricId.value));
 
-    // Uslub almashsa — uning birinchi look'i; look almashsa — narx qo'shmaydigan tkan.
+    // Style changes → its first look; look changes → the fabric without a surcharge.
     watch(styleId, (id) => {
         if (style.value?.id !== id)
             lookId.value = firstLookId(styles, id) ?? lookId.value;
@@ -57,7 +57,7 @@ export function useTryOnForm(
     }
 
     return {
-        // holat (v-model uchun yoziladigan ref'lar)
+        // state (writable refs for v-model)
         photo,
         heightCm,
         waistCm,
@@ -67,7 +67,7 @@ export function useTryOnForm(
         fabricId,
         quality,
         consent,
-        // hosil qilinganlar
+        // derived
         photoUrl,
         look,
         style,

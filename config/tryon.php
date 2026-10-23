@@ -3,28 +3,35 @@
 return [
 
     /*
-    | Qaysi AI provider ishlaydi: 'mock' (bepul, development) yoki 'openai' (mijoz kaliti bilan, BYOK).
+    | Which AI provider runs a try-on (App\TryOn\ProviderFactory):
+    |  - mock   — free fake result, for development;
+    |  - openai — real AI, every visitor must bring their own OpenAI key (BYOK);
+    |  - auto   — public demo: real AI when the visitor enters a key, otherwise the free mock.
     */
     'provider' => env('TRYON_PROVIDER', 'mock'),
 
-    // Prompt shabloni versiyasi — har bir so'rovda saqlanadi (natijalarni solishtirish uchun).
+    // Prompt template version — stored with every request so results can be compared.
     'prompt_version' => 'v3',
 
     'upload' => [
         'max_kb' => 10240,                                   // 10 MB
-        'max_side' => 1536,                                  // eng uzun tomon, px: yuz detallari saqlansin (1024 da yuz "qayta chizilardi")
+        'max_side' => 1536,                                  // longest side in px: enough face detail (at 1024 faces got redrawn)
         'jpeg_quality' => 90,
         'allowed_mimes' => ['image/jpeg', 'image/png', 'image/webp'],
     ],
 
-    // Rasmlar qancha saqlanadi (Scheduler tozalaydi — 7-task).
+    // Private disk for customer photos and results: 'local' in development, a private S3/R2 bucket
+    // in production (see config/filesystems.php 's3'). Never a public disk.
+    'disk' => env('TRYON_DISK', 'local'),
+
+    // How long images are kept (the scheduler runs try-on:prune hourly).
     'ttl' => [
         'uploads_hours' => 24,
         'results_days' => 7,
     ],
 
     'mock' => [
-        // Kutish animatsiyasini sinash uchun sun'iy kechikish (soniya).
+        // Artificial delay (seconds) to exercise the waiting screen.
         'delay_seconds' => (int) env('TRYON_MOCK_DELAY', 3),
     ],
 
@@ -32,14 +39,14 @@ return [
         'base_url' => env('TRYON_OPENAI_BASE_URL', 'https://api.openai.com/v1'),
         'model' => env('TRYON_OPENAI_MODEL', 'gpt-image-2.5-sunburst'),
         'quality' => env('TRYON_OPENAI_QUALITY', 'medium'),
-        'output_longest_side' => 1536,                       // natija o'lchami kirish nisbatida (Support\\OutputSize)
-        'input_fidelity' => env('TRYON_OPENAI_INPUT_FIDELITY'),  // 'high' — faqat gpt-image-1/1.5; 2.x uchun bo'sh qoldiring
-        'output_compression' => 90,                          // natija JPEG (PNG'dan ~5x kichik)
-        'timeout' => 170,                                    // job timeout'idan (180) kichik
+        'output_longest_side' => 1536,                       // output keeps the input aspect ratio (Support\OutputSize)
+        'input_fidelity' => env('TRYON_OPENAI_INPUT_FIDELITY'),  // 'high' — gpt-image-1/1.5 only; leave empty for 2.x
+        'output_compression' => 90,                          // JPEG output (~5x smaller than PNG)
+        'timeout' => 170,                                    // must stay below the job timeout (180)
         'connect_timeout' => 10,
 
-        // USD, 1M token uchun (developers.openai.com/api/docs/pricing, 2026-10-22). Narx o'zgarsa — shu yerda.
-        // Ro'yxatda yo'q model uchun cost_usd = null (usage baribir params.usage da saqlanadi).
+        // USD per 1M tokens (developers.openai.com/api/docs/pricing, 2026-10-22). Update here when prices change.
+        // Models missing from this list get cost_usd = null (usage is still kept in params.usage).
         'pricing' => [
             'gpt-image-2.5-sunburst' => ['text_input' => 5.00, 'image_input' => 8.00, 'image_output' => 30.00],
             'gpt-image-2.5-flare' => ['text_input' => 5.00, 'image_input' => 8.00, 'image_output' => 30.00],
@@ -47,17 +54,17 @@ return [
         ],
     ],
 
-    // catalog:generate-images natijalari shu papka ichiga (media/catalog, media/fabrics). Testda vaqtinchalik papka.
+    // Where catalog:generate-images writes (media/catalog, media/fabrics). Tests point it at a temp dir.
     'catalog_media_path' => public_path(),
 
-    // Generatsiyadan oldin mijozga ko'rsatiladigan taxminiy narx (USD, bitta look, 4 ta kirish rasmi).
+    // Rough per-look cost shown before generating (USD).
     'estimate_usd' => [
         'medium' => 0.05,
         'high' => 0.09,
     ],
 
     'job' => [
-        'timeout' => 180,                                    // DB_QUEUE_RETRY_AFTER undan katta bo'lishi shart (200)
+        'timeout' => 180,                                    // DB_QUEUE_RETRY_AFTER must be larger (200)
     ],
 
 ];

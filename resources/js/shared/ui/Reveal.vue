@@ -1,8 +1,8 @@
 <script setup lang="ts">
-// Skrollda pastdan ko'tarilib chiqadigan blok (bir marta). prefers-reduced-motion — MotionConfig orqali o'chadi.
+// Block that rises into view on scroll (once). prefers-reduced-motion disables it through MotionConfig.
 import { Motion } from 'motion-v';
 
-// `as` — aniq teg nomlari: motion-v Motion komponenti generik, oddiy `string` ni qabul qilmaydi.
+// `as` is a union of concrete tag names: motion-v's Motion component is generic and rejects a plain `string`.
 withDefaults(
     defineProps<{
         delay?: number;

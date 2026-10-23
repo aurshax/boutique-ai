@@ -4,5 +4,5 @@ namespace App\TryOn\Exceptions;
 
 use RuntimeException;
 
-/** Yuklangan fayl rasm emas, ruxsat etilmagan format yoki buzilgan. */
+/** The uploaded file is not an image, uses a disallowed format, or is corrupt. Message is user-facing. */
 class InvalidImageException extends RuntimeException {}

@@ -19,7 +19,7 @@ export const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
-        // boutique-ai brend variantlari (dizayn: navy + tikuvchi bo'ri)
+        // boutique-ai brand variants (design: navy + tailor's chalk)
         brand: "rounded-full bg-ink font-semibold text-chalk hover:bg-ink/90 focus-visible:ring-chalk/50",
         chalk: "rounded-full bg-chalk font-semibold text-ink hover:bg-chalk-hover focus-visible:ring-chalk/50",
         "pill-outline": "rounded-full border border-[#C2C8D2] bg-transparent font-normal text-ink hover:border-ink",

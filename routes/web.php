@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 
-// Try-on: login shart emas. Egalik session orqali (TryOnController::owned).
+// Try-on needs no login. Ownership is tied to the session (TryOnController::owned).
 Route::get('try-on', [TryOnController::class, 'create'])->name('try-on.create');
 
 Route::prefix('try-on/requests')->name('try-on.requests.')->group(function () {

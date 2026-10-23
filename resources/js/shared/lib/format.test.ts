@@ -8,15 +8,15 @@ import {
 } from './format';
 
 describe('formatUzs', () => {
-    it('groups thousands with spaces', () => {
-        expect(formatUzs(4_357_000)).toBe('4 357 000');
-        expect(formatUzs(690_000)).toBe('690 000');
+    it('groups thousands with commas', () => {
+        expect(formatUzs(4_357_000)).toBe('4,357,000');
+        expect(formatUzs(690_000)).toBe('690,000');
         expect(formatUzs(999)).toBe('999');
         expect(formatUzs(0)).toBe('0');
     });
 
     it('rounds fractional input', () => {
-        expect(formatUzs(1234.6)).toBe('1 235');
+        expect(formatUzs(1234.6)).toBe('1,235');
     });
 });
 

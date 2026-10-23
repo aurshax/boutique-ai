@@ -1,4 +1,4 @@
-// Try-on endpoint'lari (Wayfinder URL'lari + shared/api). UI va holatni bilmaydi — faqat so'rovlar.
+// Try-on endpoints (Wayfinder URLs + shared/api). Knows nothing about UI or state — requests only.
 import {
     destroy,
     show,
@@ -7,7 +7,7 @@ import {
 import { requestJson } from '@/shared/api';
 import type { CreateTryOnPayload, TryOnRequest } from '../model/types';
 
-/** BYOK kaliti faqat shu sarlavhada yuboriladi; server uni darhol olib tashlaydi (ExtractOpenAiKey). */
+/** The BYOK key is sent only in this header; the server strips it right away (ExtractOpenAiKey). */
 export const API_KEY_HEADER = 'X-OpenAI-Key';
 
 export function toFormData(payload: CreateTryOnPayload): FormData {
@@ -41,7 +41,7 @@ export const tryOnApi = {
         return requestJson<TryOnRequest>(show.url(id), { signal });
     },
 
-    /** Rasmlarni o'chiradi; tugamagan so'rov `cancelled` bo'ladi. */
+    /** Deletes the images; an unfinished request becomes `cancelled`. */
     async remove(id: string): Promise<void> {
         await requestJson(destroy.url(id), { method: 'DELETE' });
     },

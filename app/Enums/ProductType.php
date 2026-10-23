@@ -13,17 +13,10 @@ enum ProductType: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Trousers => 'Shim',
-            self::Shirt => "Ko'ylak",
-            self::Blazer => 'Blazer',
-            self::Belt => 'Kamar',
-            self::Tie => 'Galstuk',
-            self::Shoes => 'Poyabzal',
-        };
+        return __("catalog.product_types.{$this->value}");
     }
 
-    /** Faqat shu turlar uchun tkan almashtirish mumkin. */
+    /** Only these types can be made in a different fabric. */
     public function supportsFabricSwap(): bool
     {
         return in_array($this, [self::Trousers, self::Blazer], true);

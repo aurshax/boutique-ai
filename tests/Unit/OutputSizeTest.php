@@ -9,7 +9,7 @@ class OutputSizeTest extends TestCase
 {
     public function test_keeps_input_aspect_for_gpt_image_2_family(): void
     {
-        $this->assertSame('1152x1536', OutputSize::for('gpt-image-2.5-sunburst', 768, 1024));   // 3:4 telefon rasmi
+        $this->assertSame('1152x1536', OutputSize::for('gpt-image-2.5-sunburst', 768, 1024));   // 3:4 phone photo
         $this->assertSame('1024x1536', OutputSize::for('gpt-image-2.5-sunburst', 1024, 1536));
         $this->assertSame('1536x1152', OutputSize::for('gpt-image-2', 1024, 768));
     }

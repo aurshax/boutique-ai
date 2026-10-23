@@ -49,7 +49,7 @@ class TryOnJobTest extends TestCase
 
         TryOnJob::dispatchSync($request->id);
 
-        $this->assertNull($request->fresh()?->result_path);   // provider chaqirilmadi
+        $this->assertNull($request->fresh()?->result_path);   // the provider was never called
     }
 
     public function test_missing_upload_marks_request_failed(): void

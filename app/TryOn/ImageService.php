@@ -4,52 +4,61 @@ namespace App\TryOn;
 
 use App\TryOn\Exceptions\InvalidImageException;
 use GdImage;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
- * Rasmlar bilan ishlash (faqat PHP GD — qo'shimcha paket yo'q).
+ * Image handling (plain PHP GD — no extra packages).
  *
- * Mijoz rasmi har doim QAYTA KODLANADI. Bu bir vaqtda:
- *  - EXIF/GPS va boshqa metadata'ni o'chiradi (shaxsiy ma'lumot),
- *  - fayl ichiga yashirilgan payload'ni yo'q qiladi,
- *  - o'lchamni kichraytiradi (OpenAI kirish tokenlari = narx).
+ * The customer photo is ALWAYS re-encoded. That at once:
+ *  - strips EXIF/GPS and other metadata (personal data),
+ *  - destroys any payload hidden inside the file,
+ *  - shrinks it (OpenAI input tokens = cost).
  */
 class ImageService
 {
-    /** Decompression bomb himoyasi: 10 MB fayl 100 000 × 100 000 px bo'lib ochilishi mumkin. */
+    /** Decompression-bomb guard: a 10 MB file can decode to 100 000 × 100 000 px. */
     private const MAX_PIXELS = 40_000_000;
 
-    private const DISK = 'local';   // storage/app/private — tashqaridan to'g'ridan-to'g'ri ochilmaydi
+    /**
+     * Private disk for customer photos and results (config tryon.disk): 'local' = storage/app/private in
+     * development; a private S3-compatible bucket in production (container file systems are ephemeral).
+     * Never a public disk — images are only reachable through short-lived signed URLs.
+     */
+    private function disk(): Filesystem
+    {
+        return Storage::disk((string) config('tryon.disk', 'local'));
+    }
 
     /**
-     * Xom baytlarni tekshiradi va toza JPEG qaytaradi.
+     * Validates raw bytes and returns a clean JPEG.
      *
      * @throws InvalidImageException
      */
     public function sanitize(string $bytes): string
     {
         if ($bytes === '' || strlen($bytes) > config('tryon.upload.max_kb') * 1024) {
-            throw new InvalidImageException('Fayl bo\'sh yoki juda katta (10 MB gacha).');
+            throw new InvalidImageException(__('tryon.image.too_large', ['mb' => (int) round(config('tryon.upload.max_kb') / 1024)]));
         }
 
-        // MIME — fayl kengaytmasidan emas, baytlarning o'zidan aniqlanadi.
+        // MIME is detected from the bytes, not from the file extension.
         $mime = (new \finfo(FILEINFO_MIME_TYPE))->buffer($bytes);
         if (! in_array($mime, config('tryon.upload.allowed_mimes'), true)) {
-            throw new InvalidImageException('Faqat JPEG, PNG yoki WebP rasm yuklash mumkin.');
+            throw new InvalidImageException(__('tryon.image.wrong_type'));
         }
 
         $size = @getimagesizefromstring($bytes);
         if ($size === false || $size[0] < 1 || $size[1] < 1) {
-            throw new InvalidImageException('Rasmni o\'qib bo\'lmadi.');
+            throw new InvalidImageException(__('tryon.image.unreadable'));
         }
         if ($size[0] * $size[1] > self::MAX_PIXELS) {
-            throw new InvalidImageException('Rasm o\'lchami juda katta.');
+            throw new InvalidImageException(__('tryon.image.too_many_pixels'));
         }
 
         $image = @imagecreatefromstring($bytes);
         if (! $image instanceof GdImage) {
-            throw new InvalidImageException('Rasmni o\'qib bo\'lmadi.');
+            throw new InvalidImageException(__('tryon.image.unreadable'));
         }
 
         if ($mime === 'image/jpeg') {
@@ -57,22 +66,22 @@ class ImageService
         }
 
         $image = $this->fitWithin($image, (int) config('tryon.upload.max_side'));
-        $image = $this->flattenOnWhite($image);   // PNG/WebP shaffofligi → oq fon
+        $image = $this->flattenOnWhite($image);   // PNG/WebP transparency → white background
 
         return $this->encodeJpeg($image);
     }
 
-    /** Tozalangan mijoz rasmini private diskka yozadi. Fayl nomi — UUID (foydalanuvchi bergan nom emas). */
+    /** Stores the sanitised customer photo on the private disk. The file name is a UUID, never the user's name. */
     public function storeUpload(string $cleanJpeg): string
     {
         $path = 'uploads/'.Str::uuid()->toString().'.jpg';
-        Storage::disk(self::DISK)->put($path, $cleanJpeg);
+        $this->disk()->put($path, $cleanJpeg);
 
         return $path;
     }
 
     /**
-     * Provider qaytargan natijani saqlaydi.
+     * Stores the image returned by the provider.
      *
      * @throws InvalidImageException
      */
@@ -83,33 +92,44 @@ class ImageService
             'image/png' => 'png',
             'image/jpeg' => 'jpg',
             'image/webp' => 'webp',
-            default => throw new InvalidImageException("Provider rasm qaytarmadi ({$mime})."),
+            default => throw new InvalidImageException(__('tryon.image.provider_returned_no_image')),
         };
 
         $path = "results/{$requestId}.{$ext}";
-        Storage::disk(self::DISK)->put($path, $bytes);
+        $this->disk()->put($path, $bytes);
 
         return $path;
     }
 
     public function read(string $path): string
     {
-        $bytes = Storage::disk(self::DISK)->get($path);
+        $bytes = $this->disk()->get($path);
         if ($bytes === null) {
-            throw new InvalidImageException("Fayl topilmadi: {$path}");
+            throw new InvalidImageException(__('tryon.image.missing'));
         }
 
         return $bytes;
     }
 
+    public function exists(?string $path): bool
+    {
+        return $path !== null && $this->disk()->exists($path);
+    }
+
+    /** Short-lived signed URL (local: Laravel's signed route; S3: a pre-signed URL). */
+    public function temporaryUrl(string $path, int $minutes = 10): string
+    {
+        return $this->disk()->temporaryUrl($path, now()->addMinutes($minutes));
+    }
+
     public function delete(?string $path): void
     {
         if ($path !== null) {
-            Storage::disk(self::DISK)->delete($path);
+            $this->disk()->delete($path);
         }
     }
 
-    /** Telefon rasmlari ko'pincha yon tomonga burilgan bo'ladi — EXIF Orientation bo'yicha to'g'rilaymiz. */
+    /** Phone photos are often stored rotated — fix them using the EXIF Orientation tag. */
     private function applyExifOrientation(GdImage $image, string $bytes): GdImage
     {
         if (! function_exists('exif_read_data')) {

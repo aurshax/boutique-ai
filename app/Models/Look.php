@@ -10,14 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 
 /**
- * Tayyor obraz (look): shim + ko'ylak/blazer + aksessuarlar.
+ * A ready-made outfit (look): trousers + shirt/blazer + accessories.
  *
  * @property int $id
  * @property int $style_id
  * @property string $slug
  * @property string $name
  * @property string|null $description
- * @property bool $is_suit  pidjak va shim bir matodan — tkan ikkalasiga qo'llanadi
+ * @property bool $is_suit  jacket and trousers share one fabric — the chosen fabric applies to both
  * @property int $sort
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -30,7 +30,7 @@ class Look extends Model
         return ['is_suit' => 'boolean'];
     }
 
-    /** Tanlangan tkan qaysi mahsulotlarga tegadi: kostyumda shim + blazer, aks holda faqat shim. */
+    /** Which products the chosen fabric applies to: trousers + blazer in a suit, otherwise trousers only. */
     public function followsFabric(Product $product): bool
     {
         return $product->type === ProductType::Trousers
@@ -51,7 +51,7 @@ class Look extends Model
             ->orderByPivot('position');
     }
 
-    /** Look'ning umumiy narxi (so'm), tkan ustamasisiz. */
+    /** Look total price (UZS) without fabric surcharges. */
     public function totalPriceUzs(): int
     {
         return (int) $this->products->sum('price_uzs');

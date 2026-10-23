@@ -4,12 +4,12 @@ namespace App\Jobs;
 
 use App\Enums\TryOnStatus;
 use App\Models\TryOnRequest;
-use App\TryOn\Contracts\TryOnProvider;
 use App\TryOn\Data\TryOnInput;
 use App\TryOn\Exceptions\InvalidImageException;
 use App\TryOn\Exceptions\TryOnProviderException;
 use App\TryOn\ImageService;
 use App\TryOn\PromptBuilder;
+use App\TryOn\ProviderFactory;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -17,13 +17,13 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * Bitta try-on so'rovini fonda bajaradi.
+ * Runs one try-on request in the background.
  *
- * Xavfsizlik:
- *  - ShouldBeEncrypted: jobs jadvalidagi payload (ichida mijozning OpenAI kaliti) APP_KEY bilan shifrlanadi.
- *  - #[\SensitiveParameter]: exception stack trace'larida kalit ko'rinmaydi.
- *  - $tries = 1: qayta urinish = mijozdan ikkinchi marta pul. Hech qachon avtomatik takrorlanmaydi.
- *  - Atomar "queued → running" o'tishi: ikki worker bitta so'rovni ikki marta bajarmaydi.
+ * Security:
+ *  - ShouldBeEncrypted: the jobs-table payload (which holds the customer's OpenAI key) is encrypted with APP_KEY.
+ *  - #[\SensitiveParameter]: the key never shows up in exception stack traces.
+ *  - $tries = 1: a retry would charge the customer twice, so it never retries automatically.
+ *  - Atomic "queued → running" claim: two workers can never run the same request.
  */
 class TryOnJob implements ShouldBeEncrypted, ShouldQueue
 {
@@ -42,9 +42,9 @@ class TryOnJob implements ShouldBeEncrypted, ShouldQueue
         $this->timeout = (int) config('tryon.job.timeout', 180);
     }
 
-    public function handle(TryOnProvider $provider, PromptBuilder $prompts, ImageService $images): void
+    public function handle(ProviderFactory $providers, PromptBuilder $prompts, ImageService $images): void
     {
-        // Atomar o'tish: faqat 'queued' bo'lsa 'running' ga o'tkazamiz. 0 qator = kimdir allaqachon olgan.
+        // Atomic claim: only a 'queued' row becomes 'running'. 0 rows = someone else already took it.
         $claimed = TryOnRequest::whereKey($this->requestId)
             ->where('status', TryOnStatus::Queued->value)
             ->update(['status' => TryOnStatus::Running->value, 'started_at' => now()]);
@@ -57,12 +57,12 @@ class TryOnJob implements ShouldBeEncrypted, ShouldQueue
 
         try {
             if ($request->look === null || $request->upload_path === null) {
-                throw new TryOnProviderException('So\'rovda look yoki rasm yo\'q.');
+                throw new TryOnProviderException(__('tryon.errors.request_incomplete'));
             }
 
             $built = $prompts->build($request->look, $request->fabric, $request->height_cm);
 
-            $result = $provider->generate(new TryOnInput(
+            $result = $providers->make($this->apiKey)->generate(new TryOnInput(
                 personImage: $images->read($request->upload_path),
                 references: $built['references'],
                 prompt: $built['prompt'],
@@ -72,8 +72,8 @@ class TryOnJob implements ShouldBeEncrypted, ShouldQueue
 
             $resultPath = $images->storeResult($request->id, $result->imageBytes);
 
-            // Atomar yakunlash: mijoz shu orada "to'xtatish"/"o'chirish" bossa (status = cancelled),
-            // natijani yozmaymiz va faylni o'chiramiz. Narx baribir yoziladi — pul yechilgan.
+            // Atomic finish: if the customer pressed "stop" / "delete" meanwhile (status = cancelled),
+            // do not store the result and delete the file. The cost is still recorded — it was charged.
             $finished = TryOnRequest::whereKey($request->id)
                 ->where('status', TryOnStatus::Running->value)
                 ->update([
@@ -90,29 +90,29 @@ class TryOnJob implements ShouldBeEncrypted, ShouldQueue
                 TryOnRequest::whereKey($request->id)->update(['model' => $result->model, 'cost_usd' => $result->costUsd]);
             }
         } catch (TryOnProviderException|InvalidImageException $e) {
-            // Kutilgan xato — foydalanuvchiga ko'rsatsa bo'ladigan xabar.
+            // Expected error — the message is safe to show to the customer.
             $this->markFailed($request, $e->getMessage());
         } catch (Throwable $e) {
-            // Kutilmagan xato — foydalanuvchiga umumiy xabar, logga tafsilot (kalitsiz).
-            Log::error('TryOnJob kutilmagan xato', [
+            // Unexpected error — generic message for the customer, details (without the key) go to the log.
+            Log::error('TryOnJob unexpected error', [
                 'request_id' => $this->requestId,
                 'exception' => $e::class,
                 'message' => $e->getMessage(),
             ]);
-            $this->markFailed($request, 'Ichki xato. Qaytadan urinib ko\'ring.');
+            $this->markFailed($request, __('tryon.errors.internal'));
         }
     }
 
-    /** Timeout yoki worker qulasa — Laravel shu metodni chaqiradi. */
+    /** Called by Laravel on timeout or when the worker dies. */
     public function failed(?Throwable $e): void
     {
         $request = TryOnRequest::find($this->requestId);
         if ($request !== null && ! $request->status->isFinished()) {
-            $this->markFailed($request, 'Vaqt tugadi. AI javob bermadi.');
+            $this->markFailed($request, __('tryon.errors.timeout'));
         }
     }
 
-    /** Faqat hali tugamagan so'rovni failed qiladi (cancelled ustidan yozmaydi). */
+    /** Fails only a request that is still in progress (never overwrites cancelled). */
     private function markFailed(TryOnRequest $request, string $message): void
     {
         TryOnRequest::whereKey($request->id)

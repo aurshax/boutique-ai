@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/** OpenAI'ga haqiqiy so'rov ketmaydi: Http::fake() — pul sarflanmaydi. */
+/** No real OpenAI calls: Http::fake() — nothing is billed. */
 class OpenAiProviderTest extends TestCase
 {
     private const KEY = 'sk-test-SECRET-KEY-1234567890abcdef';
@@ -51,8 +51,8 @@ class OpenAiProviderTest extends TestCase
                 && $request->hasHeader('Authorization', 'Bearer '.self::KEY)
                 && $request['model'] === config('tryon.openai.model')
                 && $request['quality'] === 'high'
-                && $request['size'] === '1536x1536'          // 8×8 kvadrat → nisbat saqlanadi, eng uzun tomon 1536
-                && ! isset($request['input_fidelity'])       // gpt-image-2.5 uchun yuborilmaydi
+                && $request['size'] === '1536x1536'          // 8×8 square → aspect kept, longest side 1536
+                && ! isset($request['input_fidelity'])       // omitted for gpt-image-2.5
                 && count($request['images']) === 2
                 && str_starts_with($request['images'][0]['image_url'], 'data:image/jpeg;base64,');
         });
@@ -66,7 +66,7 @@ class OpenAiProviderTest extends TestCase
             (new OpenAiProvider)->generate(new TryOnInput($this->jpeg(), [], 'prompt', null));
             $this->fail('Exception kutilgan edi');
         } catch (TryOnProviderException $e) {
-            $this->assertStringContainsString('kaliti', $e->getMessage());
+            $this->assertStringContainsString('API key', $e->getMessage());
         }
 
         Http::assertNothingSent();
@@ -90,7 +90,7 @@ class OpenAiProviderTest extends TestCase
             $this->assertStringNotContainsString('SECRET', $e->getMessage());
         }
 
-        // Log'ga faqat status/kod/tur — OpenAI xabar matni (unda kalit bo'lishi mumkin) emas.
+        // Only status/code/type are logged — never OpenAI's message text (it may contain the key).
         Log::shouldHaveReceived('warning')->withArgs(
             fn (string $message, array $context) => ! str_contains(json_encode($context), 'SECRET')
         );
@@ -100,12 +100,12 @@ class OpenAiProviderTest extends TestCase
     public static function errorCases(): array
     {
         return [
-            'invalid key' => [401, 'invalid_api_key', 'kaliti noto\'g\'ri'],
-            'no money' => [429, 'insufficient_quota', 'limit tugagan'],
-            'rate limit' => [429, 'rate_limit_exceeded', 'chegarasiga'],
-            'not verified' => [403, '', 'ruxsat yo\'q'],
-            'moderation' => [400, 'moderation_blocked', 'xavfsizlik'],
-            'server' => [500, '', 'vaqtinchalik'],
+            'invalid key' => [401, 'invalid_api_key', 'invalid or revoked'],
+            'no money' => [429, 'insufficient_quota', 'out of credit'],
+            'rate limit' => [429, 'rate_limit_exceeded', 'rate limit reached'],
+            'not verified' => [403, '', 'not allowed'],
+            'moderation' => [400, 'moderation_blocked', 'safety rules'],
+            'server' => [500, '', 'temporary problem'],
         ];
     }
 
@@ -114,7 +114,7 @@ class OpenAiProviderTest extends TestCase
         Http::fake(fn () => throw new ConnectionException('cURL error 28: Operation timed out'));
 
         $this->expectException(TryOnProviderException::class);
-        $this->expectExceptionMessage('aloqa uzildi');
+        $this->expectExceptionMessage('Could not reach OpenAI');
 
         (new OpenAiProvider)->generate($this->input());
     }
@@ -144,7 +144,7 @@ class OpenAiProviderTest extends TestCase
         $result = (new OpenAiProvider('gpt-image-1.5', 'high'))->generate($this->input());
 
         $this->assertSame('gpt-image-1.5', $result->model);
-        $this->assertNull($result->costUsd);   // narxi config'da yo'q — taxmin qilmaymiz
+        $this->assertNull($result->costUsd);   // not in the price list — we do not guess
         Http::assertSent(fn (Request $r) => $r['model'] === 'gpt-image-1.5'
             && $r['input_fidelity'] === 'high'
             && $r['size'] === '1024x1024');

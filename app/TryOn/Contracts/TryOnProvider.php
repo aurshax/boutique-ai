@@ -7,14 +7,14 @@ use App\TryOn\Data\TryOnResult;
 use App\TryOn\Exceptions\TryOnProviderException;
 
 /**
- * AI provider shartnomasi. Kod faqat shu interfeysni biladi:
- * MockProvider (development) yoki OpenAiProvider (11-task) config orqali almashtiriladi.
+ * AI provider contract. The rest of the code only knows this interface:
+ * MockProvider (free demo) and OpenAiProvider are chosen by ProviderFactory.
  */
 interface TryOnProvider
 {
     /** @throws TryOnProviderException */
     public function generate(TryOnInput $input): TryOnResult;
 
-    /** usage_log va try_on_requests.provider uchun qisqa nom. */
+    /** Short name stored in try_on_requests.provider. */
     public function name(): string;
 }

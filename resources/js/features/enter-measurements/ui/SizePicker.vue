@@ -1,16 +1,18 @@
 <script setup lang="ts">
-// Odatdagi razmer: radiogroup. Ro'yxat backend'dan (CreateTryOnRequest::SIZES).
+// Usual size: a radiogroup. The list comes from the backend (CreateTryOnRequest::SIZES).
 import { useId } from 'vue';
+import { useI18n } from '@/shared/i18n';
 
 defineProps<{ sizes: string[]; label?: string }>();
 const model = defineModel<string | null>({ required: true });
+const { t } = useI18n();
 const labelId = useId();
 </script>
 
 <template>
     <div class="flex flex-col gap-1.5">
         <span :id="labelId" class="text-sm text-slate">{{
-            label ?? 'Odatdagi razmer'
+            label ?? t('tryOn.size.label')
         }}</span>
         <div
             role="radiogroup"

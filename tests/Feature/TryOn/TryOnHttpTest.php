@@ -24,7 +24,7 @@ class TryOnHttpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();   // testlar `npm run dev` yoki build'ga bog'liq bo'lmasin
+        $this->withoutVite();   // tests must not depend on `npm run dev` or a build
         Storage::fake('local', ['serve' => true]);
         config(['tryon.provider' => 'mock', 'tryon.mock.delay_seconds' => 0]);
         $this->seed(CatalogSeeder::class);
@@ -37,7 +37,7 @@ class TryOnHttpTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('try-on/TryOnPage')
                 ->has('styles', 4)
-                ->where('requiresApiKey', false)
+                ->where('keyMode', 'none')
                 ->has('styles.0.looks.0.products')
                 ->where('upload.max_kb', 10240)
                 ->has('upload.allowed_mimes'));
@@ -96,6 +96,31 @@ class TryOnHttpTest extends TestCase
             ->assertJsonValidationErrors('api_key');
     }
 
+    public function test_demo_mode_uses_mock_without_key_and_openai_with_key(): void
+    {
+        config(['tryon.provider' => 'auto']);
+        Queue::fake();
+
+        $this->get('/try-on')->assertInertia(fn (AssertableInertia $page) => $page->where('keyMode', 'optional'));
+
+        $demo = $this->postJson('/try-on/requests', $this->payload())->assertStatus(202)->json('id');
+        $this->assertSame('mock', TryOnRequest::findOrFail($demo)->provider);
+
+        $real = $this->withHeader('X-OpenAI-Key', 'sk-test-DEMO-VISITOR-KEY-1234567890')
+            ->postJson('/try-on/requests', $this->payload())->assertStatus(202)->json('id');
+        $this->assertSame('openai', TryOnRequest::findOrFail($real)->provider);
+    }
+
+    public function test_demo_mode_rejects_a_malformed_key(): void
+    {
+        config(['tryon.provider' => 'auto']);
+
+        $this->withHeader('X-OpenAI-Key', 'not-a-key')
+            ->postJson('/try-on/requests', $this->payload())
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('api_key');
+    }
+
     public function test_validation_rejects_bad_input(): void
     {
         $this->postJson('/try-on/requests', [
@@ -107,7 +132,7 @@ class TryOnHttpTest extends TestCase
 
     public function test_suit_fabric_must_be_available_for_the_jacket_too(): void
     {
-        // Kostyum (smart-navy-knit): katak tkanni blazerdan olib tashlaymiz — shimda bor, pidjakda yo'q.
+        // Suit (smart-navy-knit): detach the check fabric from the blazer — the trousers have it, the jacket does not.
         $greyCheck = Fabric::where('slug', 'grey-check')->value('id');
         Product::where('slug', 'blazer-navy')->firstOrFail()->fabrics()->detach($greyCheck);
 
@@ -120,12 +145,12 @@ class TryOnHttpTest extends TestCase
     {
         $this->get('/try-on')->assertInertia(fn (AssertableInertia $page) => $page
             ->where('styles.0.looks.0.is_suit', true)                      // classic-navy-suit
-            ->has('styles.0.looks.0.products.1.fabrics', 7));               // blazer-navy: 7 ta jun
+            ->has('styles.0.looks.0.products.1.fabrics', 7));               // blazer-navy: 7 wool fabrics
     }
 
     public function test_fabric_must_belong_to_look_trousers(): void
     {
-        // Zig'ir look'idagi shim faqat bej zig'irda tikiladi — katak tkan ruxsat etilmaydi.
+        // The linen look's trousers only come in beige linen — the check fabric is not allowed.
         $payload = $this->payload([
             'look_id' => Look::where('slug', 'summer-linen')->value('id'),
             'fabric_id' => Fabric::where('slug', 'grey-check')->value('id'),
@@ -147,7 +172,7 @@ class TryOnHttpTest extends TestCase
 
     public function test_full_flow_with_mock_provider(): void
     {
-        // phpunit.xml: QUEUE_CONNECTION=sync — job shu zahoti bajariladi.
+        // phpunit.xml: QUEUE_CONNECTION=sync — the job runs immediately.
         $id = $this->postJson('/try-on/requests', $this->payload())->assertStatus(202)->json('id');
 
         $this->getJson("/try-on/requests/{$id}")

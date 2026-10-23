@@ -7,8 +7,8 @@ use App\Models\Fabric;
 use App\Models\Product;
 
 /**
- * Katalog rasmlari uchun promptlar: hamma mahsulot bir xil uslubda (oq fon, studiya yorug'i, odamsiz),
- * shunda try-on'ga "kiyim referensi" sifatida berilganda model faqat kiyimni ko'radi.
+ * Prompts for catalogue images: every product in one consistent style (white background, studio light,
+ * no person), so when passed to a try-on as a garment reference the model sees only the garment.
  */
 final class CatalogImagePrompts
 {
@@ -43,7 +43,7 @@ final class CatalogImagePrompts
             .'Realistic scale of a 10 x 10 cm piece, visible yarn and weave detail, even soft light, no folds, no text, no logo.';
     }
 
-    /** "light-grey-flannel" → "light grey flannel" (slug'lar inglizcha), tarkibi bilan. */
+    /** "light-grey-flannel" → "light grey flannel" (slugs are English), plus the composition. */
     private static function fabricWords(Fabric $fabric): string
     {
         return str_replace('-', ' ', $fabric->slug)." fabric ({$fabric->composition})";

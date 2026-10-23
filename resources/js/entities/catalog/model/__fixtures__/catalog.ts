@@ -1,11 +1,11 @@
-// Testlar uchun kichik katalog (CatalogSeeder'dagi "Smart Casual" va "Yozgi" asosida).
-// Navy Knit — kostyum (is_suit): blazerning o'z tkan ustamalari shimnikidan farq qiladi (narx testi uchun).
+// Small catalogue for tests (based on CatalogSeeder's "Smart Casual" and "Summer").
+// Navy Knit is a suit (is_suit): the blazer's own surcharges differ from the trousers' (for price tests).
 import type { Fabric, Style } from '../types';
 
 export const navyWool: Fabric = {
     id: 1,
-    name: "To'q ko'k jun",
-    composition: '100% jun',
+    name: 'Navy wool',
+    composition: '100% wool',
     pattern: 'plain',
     color_hex: '#1F2A44',
     swatch_image: null,
@@ -13,8 +13,8 @@ export const navyWool: Fabric = {
 };
 export const greyCheck: Fabric = {
     id: 3,
-    name: 'Kulrang katak',
-    composition: '95% jun, 5% kashemir',
+    name: 'Grey check',
+    composition: '95% wool, 5% cashmere',
     pattern: 'check',
     color_hex: '#7A7D82',
     swatch_image: 'media/fabrics/fabric-navy-check-grey-twill.webp',
@@ -22,8 +22,8 @@ export const greyCheck: Fabric = {
 };
 export const beigeLinen: Fabric = {
     id: 6,
-    name: "Bej zig'ir",
-    composition: "55% zig'ir",
+    name: 'Beige linen',
+    composition: '55% linen',
     pattern: 'plain',
     color_hex: '#CDBA96',
     swatch_image: null,
@@ -46,8 +46,8 @@ export const styles: Style[] = [
                     {
                         id: 1,
                         type: 'trousers',
-                        type_label: 'Shim',
-                        name: "Klassik shim, to'q ko'k",
+                        type_label: 'Trousers',
+                        name: 'Classic navy trousers',
                         price_uzs: 690_000,
                         image: null,
                         fabrics: [greyCheck, navyWool],
@@ -56,10 +56,10 @@ export const styles: Style[] = [
                         id: 5,
                         type: 'blazer',
                         type_label: 'Blazer',
-                        name: "Blazer, to'q ko'k jun",
+                        name: 'Navy wool blazer',
                         price_uzs: 1_890_000,
                         image: '/media/catalog/blazer-navy.webp',
-                        // blazerda katak +200k (shimda +130k); zig'ir yo'q
+                        // check is +200k on the blazer (+130k on the trousers); no linen
                         fabrics: [
                             { ...greyCheck, extra_price_uzs: 200_000 },
                             navyWool,
@@ -68,8 +68,8 @@ export const styles: Style[] = [
                     {
                         id: 10,
                         type: 'shirt',
-                        type_label: "Ko'ylak",
-                        name: 'Krem trikotaj polo',
+                        type_label: 'Shirt',
+                        name: 'Cream knit polo',
                         price_uzs: 429_000,
                         image: null,
                         fabrics: [],
@@ -77,8 +77,8 @@ export const styles: Style[] = [
                     {
                         id: 14,
                         type: 'belt',
-                        type_label: 'Kamar',
-                        name: 'Kamar, jigarrang zamsh',
+                        type_label: 'Belt',
+                        name: 'Brown suede belt',
                         price_uzs: 269_000,
                         image: null,
                         fabrics: [],
@@ -86,8 +86,8 @@ export const styles: Style[] = [
                     {
                         id: 16,
                         type: 'shoes',
-                        type_label: 'Poyabzal',
-                        name: 'Loafer, jigarrang zamsh',
+                        type_label: 'Shoes',
+                        name: 'Brown suede loafers',
                         price_uzs: 890_000,
                         image: null,
                         fabrics: [],
@@ -99,20 +99,20 @@ export const styles: Style[] = [
     {
         id: 4,
         slug: 'summer',
-        name: 'Yozgi',
+        name: 'Summer',
         description: null,
         looks: [
             {
                 id: 7,
-                name: "Zig'ir yoz",
+                name: 'Linen Summer',
                 is_suit: false,
                 total_price_uzs: 2_098_000,
                 products: [
                     {
                         id: 4,
                         type: 'trousers',
-                        type_label: 'Shim',
-                        name: "Zig'ir shim, bej",
+                        type_label: 'Trousers',
+                        name: 'Beige linen trousers',
                         price_uzs: 590_000,
                         image: null,
                         fabrics: [beigeLinen],
@@ -120,8 +120,8 @@ export const styles: Style[] = [
                     {
                         id: 8,
                         type: 'shirt',
-                        type_label: "Ko'ylak",
-                        name: "Oq ko'ylak, poplin",
+                        type_label: 'Shirt',
+                        name: 'White poplin shirt',
                         price_uzs: 349_000,
                         image: null,
                         fabrics: [],
@@ -130,5 +130,5 @@ export const styles: Style[] = [
             },
         ],
     },
-    { id: 9, slug: 'empty', name: "Bo'sh", description: null, looks: [] },
+    { id: 9, slug: 'empty', name: 'Empty', description: null, looks: [] },
 ];

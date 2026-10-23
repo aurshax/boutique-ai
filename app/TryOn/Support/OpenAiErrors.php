@@ -6,9 +6,9 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Log;
 
 /**
- * OpenAI xato javobi → foydalanuvchiga tushunarli o'zbekcha xabar.
- * Log'ga faqat status/kod/tur yoziladi — xabar matni emas (unda kalitning bir qismi bo'lishi mumkin).
- * Try-on provider'i ham, katalog rasm generatori ham shuni ishlatadi.
+ * Turns an OpenAI error response into a clear, user-facing message (lang/en/tryon.php → openai.*).
+ * Only status/code/type are logged — never the message text (it may contain part of the key).
+ * Shared by the try-on provider and the catalogue image generator.
  */
 final class OpenAiErrors
 {
@@ -17,17 +17,28 @@ final class OpenAiErrors
         $code = (string) $response->json('error.code', '');
         $type = (string) $response->json('error.type', '');
 
-        Log::warning("OpenAI {$context} xatosi", ['status' => $response->status(), 'code' => $code, 'type' => $type]);
+        Log::warning("OpenAI {$context} error", ['status' => $response->status(), 'code' => $code, 'type' => $type]);
 
-        return match (true) {
-            $response->status() === 401 => 'OpenAI kaliti noto\'g\'ri yoki o\'chirilgan. Kalitni tekshirib, qayta kiriting.',
-            $code === 'insufficient_quota', $code === 'billing_hard_limit_reached' => 'OpenAI hisobingizda mablag\' yoki limit tugagan. platform.openai.com → Billing / Limits.',
-            $response->status() === 429 => 'OpenAI so\'rovlar chegarasiga yetdi. Bir daqiqadan keyin qayta urinib ko\'ring.',
-            $response->status() === 403 => 'Kalitga bu modeldan foydalanishga ruxsat yo\'q (OpenAI tashkilot tasdiqlashi yoki project ruxsatlari kerak bo\'lishi mumkin).',
-            $code === 'moderation_blocked', $code === 'content_policy_violation' => 'OpenAI bu rasmni xavfsizlik qoidalari bo\'yicha qayta ishlamadi. Boshqa rasm bilan urinib ko\'ring.',
-            $response->status() === 400 => 'OpenAI so\'rovni qabul qilmadi. Boshqa rasm bilan urinib ko\'ring.',
-            $response->serverError() => 'OpenAI serverida vaqtinchalik xato. Birozdan keyin qayta urinib ko\'ring.',
-            default => 'OpenAI xatosi ('.$response->status().').',
+        $key = match (true) {
+            $response->status() === 401 => 'invalid_key',
+            in_array($code, ['insufficient_quota', 'billing_hard_limit_reached'], true) => 'no_quota',
+            $response->status() === 429 => 'rate_limited',
+            $response->status() === 403 => 'forbidden',
+            in_array($code, ['moderation_blocked', 'content_policy_violation'], true) => 'moderation',
+            $response->status() === 400 => 'bad_request',
+            $response->serverError() => 'server',
+            default => null,
         };
+
+        return $key !== null
+            ? __("tryon.openai.{$key}")
+            : __('tryon.openai.unknown', ['status' => $response->status()]);
+    }
+
+    /** Errors that will repeat for every following call with the same key (stop a batch early, save money). */
+    public static function isFatal(Response $response): bool
+    {
+        return in_array($response->status(), [401, 403], true)
+            || in_array((string) $response->json('error.code', ''), ['insufficient_quota', 'billing_hard_limit_reached'], true);
     }
 }

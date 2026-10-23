@@ -1,8 +1,9 @@
 <script setup lang="ts">
-// Home: faqat kompozitsiya — bo'limlar widgets/ ichida. Props: HomeController.
+// Home: composition only — the sections live in widgets/. Props: HomeController.
 import { Head } from '@inertiajs/vue3';
 import { MotionConfig } from 'motion-v';
 import type { FabricCard, StyleCard } from '@/entities/catalog';
+import { useI18n } from '@/shared/i18n';
 import { formatUsdRange } from '@/shared/lib/format';
 import { HomeHero } from '@/widgets/home-hero';
 import {
@@ -21,6 +22,7 @@ const props = defineProps<{
     estimateUsd: { medium: number; high: number };
 }>();
 
+const { t } = useI18n();
 const estimate = formatUsdRange(
     props.estimateUsd.medium,
     props.estimateUsd.high,
@@ -28,7 +30,7 @@ const estimate = formatUsdRange(
 </script>
 
 <template>
-    <Head title="Kostyumni o'zingizda ko'ring" />
+    <Head :title="t('home.metaTitle')" />
 
     <MotionConfig reduced-motion="user">
         <div

@@ -3,11 +3,11 @@
 namespace App\TryOn\Support;
 
 /**
- * Natija o'lchami kirish rasmi nisbatida bo'lsin: nisbat farq qilsa, model sahnani qayta "kompozitsiya" qiladi
- * (poza, qo'llar, fon va yuz o'zgaradi, kadr kesiladi).
+ * Keep the output in the input's aspect ratio: when they differ, the model re-composes the scene
+ * (pose, hands, background and face change, the frame gets cropped).
  *
- * gpt-image-2 / 2.5 oilasi ixtiyoriy WIDTHxHEIGHT qabul qiladi: ikkala tomon 16 ga karrali, nisbat 1:3…3:1.
- * Eski modellar (gpt-image-1, 1.5) — faqat 1024x1024, 1024x1536, 1536x1024: eng yaqini tanlanadi.
+ * The gpt-image-2 / 2.5 family accepts any WIDTHxHEIGHT: both sides divisible by 16, ratio 1:3…3:1.
+ * Older models (gpt-image-1, 1.5) only take 1024x1024, 1024x1536, 1536x1024: the nearest is used.
  */
 final class OutputSize
 {

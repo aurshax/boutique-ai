@@ -15,11 +15,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Faqat lokal admin (keyinchalik admin panel uchun). Parol 'hashed' cast orqali xeshlanadi.
-        User::firstOrCreate(
-            ['email' => 'admin@boutique.test'],
-            ['name' => 'Admin', 'password' => 'password'],
-        );
+        // Local admin only (for a future admin panel); the 'hashed' cast hashes the password.
+        // Never created in production — a known password on a public site would be an open door.
+        if (! app()->isProduction()) {
+            User::firstOrCreate(
+                ['email' => 'admin@boutique.test'],
+                ['name' => 'Admin', 'password' => 'password'],
+            );
+        }
 
         $this->call(CatalogSeeder::class);
     }

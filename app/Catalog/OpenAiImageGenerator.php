@@ -9,15 +9,15 @@ use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
- * Matndan rasm (POST /v1/images/generations) — katalog uchun. Try-on'dagi kabi: kalit faqat sarlavhada,
- * qayta urinish yo'q, narx usage'dan.
+ * Text-to-image (POST /v1/images/generations) for the catalogue. Same rules as the try-on:
+ * key only in the header, no retries, cost from `usage`.
  */
 class OpenAiImageGenerator
 {
     /**
      * @return array{bytes: string, cost_usd: string|null, usage: array<string, mixed>}
      *
-     * @throws RuntimeException foydalanuvchiga ko'rsatsa bo'ladigan xabar bilan
+     * @throws RuntimeException with a user-facing message; code 1 = fatal for the whole batch (bad key, no quota)
      */
     public function generate(string $prompt, #[\SensitiveParameter] string $apiKey, string $model, string $quality, string $size = '1024x1024'): array
     {
@@ -39,17 +39,17 @@ class OpenAiImageGenerator
                     'n' => 1,
                 ]);
         } catch (ConnectionException) {
-            throw new RuntimeException('OpenAI bilan aloqa uzildi yoki javob kechikdi.');
+            throw new RuntimeException(__('tryon.openai.connection'));
         }
 
         if ($response->failed()) {
-            throw new RuntimeException(OpenAiErrors::message($response, 'images/generations'));
+            throw new RuntimeException(OpenAiErrors::message($response, 'images/generations'), OpenAiErrors::isFatal($response) ? 1 : 0);
         }
 
         $b64 = $response->json('data.0.b64_json');
         $bytes = is_string($b64) ? base64_decode($b64, true) : false;
         if ($bytes === false || $bytes === '') {
-            throw new RuntimeException('OpenAI rasm qaytarmadi.');
+            throw new RuntimeException(__('tryon.openai.no_image'));
         }
 
         $usage = (array) $response->json('usage', []);

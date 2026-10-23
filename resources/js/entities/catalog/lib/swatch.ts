@@ -1,4 +1,4 @@
-// Tkan namunasining ko'rinishi: rasm bo'lsa — tekstura, bo'lmasa — asosiy rang.
+// How a fabric swatch looks: the texture image when there is one, otherwise the main colour.
 import type { Fabric } from '../model/types';
 
 export function swatchStyle(

@@ -100,7 +100,7 @@ class ImageServiceTest extends TestCase
         return (string) ob_get_clean();
     }
 
-    /** JPEG SOI markeridan keyin soxta APP1 (Exif) segmentini qo'shadi — telefon rasmini taqlid qiladi. */
+    /** Inserts a fake APP1 (Exif) segment after the JPEG SOI marker — mimics a phone photo. */
     private function injectExif(string $jpeg, string $secret): string
     {
         $payload = "Exif\0\0".'II*'."\0".$secret;

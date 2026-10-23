@@ -36,7 +36,7 @@ class IntRangeCast implements CastsAttributes
         }
 
         if (! $value instanceof IntRange) {
-            throw new InvalidArgumentException("{$key}: IntRange yoki [min, max] massivi kutilgan edi.");
+            throw new InvalidArgumentException("{$key}: expected an IntRange or a [min, max] array.");
         }
 
         return $value->toPostgres();

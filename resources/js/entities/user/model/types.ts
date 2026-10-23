@@ -1,4 +1,4 @@
-// Foydalanuvchi (Laravel `auth.user` shared prop) va uning passkey'lari.
+// User (Laravel `auth.user` shared prop) and their passkeys.
 export type User = {
     id: number;
     name: string;

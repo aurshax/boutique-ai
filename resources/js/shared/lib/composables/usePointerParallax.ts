@@ -1,6 +1,6 @@
-// Sichqoncha bo'yicha parallax: element ichidagi kursor holati CSS o'zgaruvchilariga (--px, --py, -0.5…0.5)
-// yoziladi. Vue qayta render qilmaydi — faqat `transform: translate3d(calc(var(--px) * Npx), ...)` ishlaydi.
-// Sensorli ekran va reduced-motion'da o'chiq.
+// Mouse parallax: the cursor position inside the element is written to CSS variables (--px, --py, -0.5…0.5).
+// Vue does not re-render — only `transform: translate3d(calc(var(--px) * Npx), ...)` reacts.
+// Disabled on touch screens and with reduced motion.
 import { getCurrentScope, onScopeDispose, toValue } from 'vue';
 import type { MaybeRefOrGetter, Ref } from 'vue';
 

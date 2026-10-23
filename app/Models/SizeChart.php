@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * Mahsulot razmer jadvali: har razmer uchun bo'y va bel oralig'i (Postgres int4range).
+ * Product size chart: height and waist range per size (Postgres int4range).
  *
  * @property int $id
  * @property int $product_id
@@ -39,7 +39,7 @@ class SizeChart extends Model
     }
 
     /**
-     * Bo'yga mos razmerlar (GiST indeksdan foydalanadi): WHERE height_cm @> 178
+     * Sizes that fit a height (uses the GiST index): WHERE height_cm @> 178
      *
      * @param  Builder<SizeChart>  $query
      * @return Builder<SizeChart>
@@ -50,7 +50,7 @@ class SizeChart extends Model
     }
 
     /**
-     * Bel o'lchamiga mos razmerlar.
+     * Sizes that fit a waist measurement.
      *
      * @param  Builder<SizeChart>  $query
      * @return Builder<SizeChart>

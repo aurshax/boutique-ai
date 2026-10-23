@@ -11,10 +11,10 @@ use Illuminate\Support\Facades\File;
 use RuntimeException;
 
 /**
- * Katalog rasmlarini AI bilan yaratadi (bir martalik, PULLIK — mijoz emas, sizning kalitingiz):
- *  - mahsulotlar → public/media/catalog/{slug}.webp  (products.image)
- *  - tkanlar     → public/media/fabrics/swatch-{slug}.webp  (fabrics.swatch_image)
- * Bor fayllar o'tkazib yuboriladi (--force bo'lmasa) — to'xtab qolsa, qayta ishga tushirish xavfsiz.
+ * Generates catalogue images with AI (one-off and PAID — with your key, not a customer's):
+ *  - products → public/media/catalog/{slug}.webp  (products.image)
+ *  - fabrics  → public/media/fabrics/swatch-{slug}.webp  (fabrics.swatch_image)
+ * Existing files are skipped (unless --force), so re-running after an interruption is safe.
  *
  *   sail artisan catalog:generate-images --dry-run
  *   sail artisan catalog:generate-images --only=blazer-olive-tweed --force
@@ -22,15 +22,15 @@ use RuntimeException;
 class GenerateCatalogImages extends Command
 {
     protected $signature = 'catalog:generate-images
-        {--only=* : faqat shu slug(lar)}
-        {--products : faqat mahsulotlar}
-        {--fabrics : faqat tkanlar}
-        {--force : bor rasmni qayta yaratish}
+        {--only=* : only these slug(s)}
+        {--products : products only}
+        {--fabrics : fabrics only}
+        {--force : regenerate existing images}
         {--quality=medium : low|medium|high}
-        {--model=gpt-image-2.5-flare : tez, kundalik generatsiya uchun model}
-        {--dry-run : so\'rov yubormasdan ro\'yxat va promptlarni ko\'rsatish}';
+        {--model=gpt-image-2.5-flare : fast everyday generation model}
+        {--dry-run : list files and prompts without calling the API}';
 
-    protected $description = 'Katalog mahsulot rasmlari va tkan namunalarini OpenAI bilan yaratish (pullik)';
+    protected $description = 'Generate catalogue product images and fabric swatches with OpenAI (paid)';
 
     public function handle(OpenAiImageGenerator $generator): int
     {
@@ -39,7 +39,7 @@ class GenerateCatalogImages extends Command
 
         $todo = array_values(array_filter($jobs, fn (array $job) => $this->option('force') || ! is_file("{$base}/{$job['path']}")));
         if ($todo === []) {
-            $this->info('Hamma rasmlar bor. Qayta yaratish uchun --force.');
+            $this->info('All images exist. Use --force to regenerate.');
 
             return self::SUCCESS;
         }
@@ -48,15 +48,15 @@ class GenerateCatalogImages extends Command
             foreach ($todo as $job) {
                 $this->line("<info>{$job['path']}</info>\n  {$job['prompt']}");
             }
-            $this->info(count($todo).' ta rasm yaratiladi.');
+            $this->info(count($todo).' image(s) will be generated.');
 
             return self::SUCCESS;
         }
 
-        $this->warn(sprintf('%d ta rasm, model: %s, sifat: %s — OpenAI hisobingizdan to\'lanadi.', count($todo), $this->option('model'), $this->option('quality')));
-        $key = (string) $this->secret('OpenAI API kaliti');
+        $this->warn(sprintf('%d image(s), model: %s, quality: %s — billed to your OpenAI account.', count($todo), $this->option('model'), $this->option('quality')));
+        $key = (string) $this->secret('OpenAI API key');
         if (! str_starts_with($key, 'sk-')) {
-            $this->error('Kalit sk- bilan boshlanishi kerak.');
+            $this->error('The key must start with sk-.');
 
             return self::FAILURE;
         }
@@ -71,8 +71,8 @@ class GenerateCatalogImages extends Command
                 $failed++;
                 $this->newLine();
                 $this->error("{$job['path']}: {$e->getMessage()}");
-                if (str_contains($e->getMessage(), 'kaliti') || str_contains($e->getMessage(), 'limit')) {
-                    return self::FAILURE;   // kalit/limit xatosi — qolganlari ham yiqiladi, pul sarflamay to'xtaymiz
+                if ($e->getCode() === 1) {
+                    return self::FAILURE;   // bad key / no quota — every next call would fail too, stop now
                 }
 
                 continue;
@@ -87,8 +87,8 @@ class GenerateCatalogImages extends Command
         $bar->finish();
         $this->newLine(2);
 
-        $this->info(sprintf('Tayyor: %d ta, xato: %d ta, jami ≈ $%.4f', count($todo) - $failed, $failed, $total));
-        $this->line('Eslatma: seeder qayta ishga tushsa ham rasm yo\'llari saqlanadi (fayl bor bo\'lsa).');
+        $this->info(sprintf('Done: %d, failed: %d, total ≈ $%.4f', count($todo) - $failed, $failed, $total));
+        $this->line('Note: re-running the seeder keeps these image paths (as long as the files exist).');
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }

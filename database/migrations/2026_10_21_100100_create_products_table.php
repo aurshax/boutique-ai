@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('type', 16)->index();
             $table->string('name', 160);
             $table->text('description')->nullable();
-            $table->unsignedBigInteger('price_uzs');      // so'mda, tiyinsiz
+            $table->unsignedBigInteger('price_uzs');      // UZS, whole units
             $table->string('image')->nullable();          // public/media/catalog/...
             $table->foreignId('default_fabric_id')->nullable()->constrained('fabrics')->nullOnDelete();
             $table->boolean('is_active')->default(true);
@@ -27,11 +27,11 @@ return new class extends Migration
         DB::statement("ALTER TABLE products ADD CONSTRAINT products_type_check CHECK (type IN ({$types}))");
         DB::statement('ALTER TABLE products ADD CONSTRAINT products_price_check CHECK (price_uzs >= 0)');
 
-        // Qaysi mahsulotni qaysi tkanda tikish mumkin (tkan almashtirish uchun).
+        // Which product can be made in which fabric (for fabric swaps).
         Schema::create('product_fabric', function (Blueprint $table) {
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('fabric_id')->constrained()->cascadeOnDelete();
-            $table->unsignedBigInteger('extra_price_uzs')->default(0); // tkan uchun ustama
+            $table->unsignedBigInteger('extra_price_uzs')->default(0); // surcharge for this fabric
             $table->primary(['product_id', 'fabric_id']);
         });
     }

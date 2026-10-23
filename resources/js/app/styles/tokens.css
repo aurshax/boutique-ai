@@ -1,27 +1,27 @@
 /*
- * Dizayn tokenlari: boutique-ai brendi (@theme) + shadcn-vue semantik o'zgaruvchilari (light/dark).
- * Rang yoki shrift o'zgarsa — faqat shu fayl.
+ * Design tokens: boutique-ai brand (@theme) + shadcn-vue semantic variables (light/dark).
+ * Colours or fonts change here and only here.
  */
 
-/* boutique-ai brend tokenlari (dizayn: Design canvas "Boutique AI — dizayn") */
+/* boutique-ai brand tokens (design: the "Boutique AI" design canvas) */
 @theme {
     --font-display: 'Bodoni Moda', Georgia, 'Times New Roman', serif;
     --font-body: Figtree, ui-sans-serif, system-ui, sans-serif;
     --font-mono:
         'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-    --color-ink: #0f1726; /* asosiy to'q ko'k */
-    --color-ink-2: #172036; /* kartochka foni (qorong'i) */
-    --color-chalk: #e5c46b; /* tikuvchi bo'ri — aksent */
+    --color-ink: #0f1726; /* primary deep navy */
+    --color-ink-2: #172036; /* card background (dark) */
+    --color-chalk: #e5c46b; /* tailor's chalk — accent */
     --color-chalk-hover: #f1d58a;
-    --color-chalk-deep: #c79a2e; /* yorug' fonda aksent */
+    --color-chalk-deep: #c79a2e; /* accent on light backgrounds */
     --color-chalk-soft: #f5e7bd;
-    --color-mist: #c9cfda; /* qorong'i fonda ikkinchi darajali matn */
-    --color-fog: #9aa3b2; /* qorong'i fonda uchinchi darajali matn */
-    --color-paper: #eef0f3; /* yorug' sahifa foni */
+    --color-mist: #c9cfda; /* secondary text on dark */
+    --color-fog: #9aa3b2; /* tertiary text on dark */
+    --color-paper: #eef0f3; /* light page background */
     --color-line: #d7dce3;
-    --color-slate: #5b6474; /* yorug' fonda ikkinchi darajali matn */
-    --color-thread: #c2553f; /* o'lchov ko'rsatkichi */
+    --color-slate: #5b6474; /* secondary text on light */
+    --color-thread: #c2553f; /* measurement indicator */
 }
 
 @theme inline {

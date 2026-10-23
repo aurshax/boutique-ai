@@ -1,6 +1,6 @@
 /*
- * Ilovaning yagona CSS kirish nuqtasi (vite.config.ts → laravel.input).
- * Tokenlar — tokens.css; bu yerda Tailwind ulanishi, manbalar va global qatlamlar.
+ * The app's single CSS entry (vite.config.ts → laravel.input).
+ * Tokens live in tokens.css; this file wires Tailwind, sources and global layers.
  */
 @import 'tailwindcss';
 @import 'tw-animate-css';

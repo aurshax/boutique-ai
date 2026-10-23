@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Brend nomi — bitta joyda. Nom o'zgarsa (hozir "Boutique·AI" vaqtinchalik) faqat shu fayl o'zgaradi.
+// The brand name lives in one place. Renaming ("Boutique·AI" is a working title) only touches this file.
 import { Link } from '@inertiajs/vue3';
 import { home } from '@/routes';
 

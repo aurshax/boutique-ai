@@ -5,8 +5,8 @@ namespace App\TryOn\Data;
 final readonly class ReferenceImage
 {
     /**
-     * @param  string  $bytes  rasm tarkibi
-     * @param  string  $label  promptda shu rasmga havola: "trousers", "fabric swatch" ...
+     * @param  string  $bytes  image contents
+     * @param  string  $label  how the prompt refers to it: "trousers", "fabric swatch", ...
      */
     public function __construct(
         public string $bytes,

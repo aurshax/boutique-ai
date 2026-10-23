@@ -1,5 +1,5 @@
-// Try-on wizard'ining "miyasi": forma + generatsiya (feature) + kalit (feature) + qadamlar mashinasi (flow.ts).
-// TryOnWizard.vue uni yaratadi va provide qiladi; qadam komponentlari injectTryOnFlow() bilan oladi.
+// The try-on wizard's "brain": form + generation (feature) + API key (feature) + step machine (flow.ts).
+// TryOnWizard.vue creates and provides it; the step components get it via injectTryOnFlow().
 import { computed, inject, provide, readonly, ref, watch } from 'vue';
 import type { InjectionKey } from 'vue';
 import { useApiKey } from '@/features/byok-api-key';
@@ -10,7 +10,7 @@ import type { Step } from './flow';
 import type { TryOnPageProps } from './types';
 import { useTryOnForm } from './useTryOnForm';
 
-/** Sahifa ochilganda tanlangan uslub (CatalogSeeder tartibida 3-chisi — Smart Casual) va razmer. */
+/** Style selected on load (the 3rd in CatalogSeeder order — Smart Casual) and the default size. */
 const DEFAULT_STYLE_INDEX = 2;
 const DEFAULT_SIZE = '48';
 
@@ -23,13 +23,19 @@ export function useTryOnFlow(page: TryOnPageProps) {
     const apiKey = useApiKey();
 
     const step = ref<Step>('setup');
-    /** Oxirgi muvaffaqiyatli so'rov — tkan almashtirish va "Boshqa look" rasmni qayta yuklamasdan shundan foydalanadi. */
+    /** Last successful request — fabric swaps and "Another look" reuse its photo instead of uploading again. */
     const sourceRequestId = ref<string | null>(null);
-    /** Natija ekranidagi tkan tanlovi (hali generatsiya qilinmagan). */
+    /** Fabric picked on the result screen (not generated yet). */
     const swapFabricId = ref<number | null>(null);
 
+    /** Real AI runs with the visitor's key; in demo mode ('optional') a missing key means the free mock. */
+    const usesRealAi = computed(
+        () =>
+            page.keyMode === 'required' ||
+            (page.keyMode === 'optional' && apiKey.isValid.value),
+    );
     const keyReady = computed(
-        () => !page.requiresApiKey || apiKey.isValid.value,
+        () => page.keyMode !== 'required' || apiKey.isValid.value,
     );
     const hasPhoto = computed(
         () => form.photo.value !== null || sourceRequestId.value !== null,
@@ -50,22 +56,29 @@ export function useTryOnFlow(page: TryOnPageProps) {
             .filter(Boolean)
             .join(' · '),
     );
-    /** Umumiy xato: tarmoq/HTTP yoki server "failed" holati. */
-    const errorMessage = computed(() => {
-        if (request.generalError.value) return request.generalError.value;
-        // Kalit xatosi maydon ostida emas, umumiy banner'da (kalit formasi yashirin bo'lishi mumkin).
-        const keyError = request.errors.value.api_key?.[0];
-        if (keyError) return keyError;
-        const current = request.current.value;
-        return current?.status === 'failed'
-            ? (current.error ?? 'Xato yuz berdi.')
-            : null;
-    });
+    /**
+     * Page-level error: an i18n key (network/HTTP) or a server message that is already translated
+     * (API-key validation, a failed generation).
+     */
+    const errorMessage = computed<{ key: string } | { text: string } | null>(
+        () => {
+            if (request.generalError.value)
+                return { key: request.generalError.value };
+            // The key error goes to the banner, not under a field (the key form may be collapsed).
+            const keyError = request.errors.value.api_key?.[0];
+            if (keyError) return { text: keyError };
+            const current = request.current.value;
+            if (current?.status !== 'failed') return null;
+            return current.error
+                ? { text: current.error }
+                : { key: 'tryOn.errors.generic' };
+        },
+    );
 
     const fieldError = (field: string): string | null =>
         request.errors.value[field]?.[0] ?? null;
 
-    // Server holati → qadam
+    // Server status → step
     watch(
         () => request.current.value?.status,
         (status) => {
@@ -79,7 +92,7 @@ export function useTryOnFlow(page: TryOnPageProps) {
         },
     );
 
-    // Yangi rasm tanlansa — eski so'rovga bog'lanish uziladi.
+    // A new photo detaches the wizard from the previous request.
     watch(form.photo, (file) => {
         if (file) sourceRequestId.value = null;
     });
@@ -97,7 +110,7 @@ export function useTryOnFlow(page: TryOnPageProps) {
                 quality: form.quality.value,
                 consent: form.consent.value,
             },
-            page.requiresApiKey ? apiKey.key.value : null,
+            usesRealAi.value ? apiKey.key.value : null,
         );
         if (accepted)
             step.value = transition(step.value, { type: 'submitted' });
@@ -108,7 +121,7 @@ export function useTryOnFlow(page: TryOnPageProps) {
         await generate();
     }
 
-    /** "Kutishni to'xtatish" va "Rasmimni o'chirish": serverda ham, brauzerda ham rasm o'chadi. */
+    /** "Stop waiting" and "Delete my photo": the photo is removed on the server and in the browser. */
     async function discardPhoto(): Promise<void> {
         await request.remove();
         form.setPhoto(null);
@@ -130,6 +143,7 @@ export function useTryOnFlow(page: TryOnPageProps) {
         current: request.current,
         submitting: request.submitting,
         keyReady,
+        usesRealAi,
         canSubmit,
         estimate,
         summary,
@@ -154,7 +168,7 @@ export function injectTryOnFlow(): TryOnFlow {
     const flow = inject(TryOnFlowKey);
     if (!flow)
         throw new Error(
-            'injectTryOnFlow(): TryOnWizard ichida ishlating (provideTryOnFlow chaqirilmagan).',
+            'injectTryOnFlow(): use it inside TryOnWizard (provideTryOnFlow() was not called).',
         );
     return flow;
 }

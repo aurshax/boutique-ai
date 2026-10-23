@@ -1,8 +1,8 @@
-// Umumiy polling: `task` ni har `interval` ms da chaqiradi, `shouldContinue` false bo'lguncha.
-// - Bir vaqtda faqat bitta tsikl (start() eskisini to'xtatadi).
-// - stop() yoki scope yopilganda (komponent unmount, effectScope.stop) — taymer tozalanadi va
-//   uchib ketayotgan fetch AbortController orqali bekor qilinadi.
-// - Kechikib kelgan javob (stop'dan keyin) e'tiborsiz qoladi.
+// Generic polling: calls `task` every `interval` ms until `shouldContinue` returns false.
+// - Only one loop at a time (start() stops the previous one).
+// - On stop() or scope disposal (component unmount, effectScope.stop) the timer is cleared and
+//   the in-flight fetch is aborted through an AbortController.
+// - A late response (after stop) is ignored.
 import { getCurrentScope, onScopeDispose, readonly, ref } from 'vue';
 import { isAbortError } from '@/shared/api';
 
@@ -11,7 +11,7 @@ export type PollingOptions<T> = {
     shouldContinue: (result: T) => boolean;
     onResult: (result: T) => void;
     onError?: (error: unknown) => void;
-    /** true — birinchi chaqiruv darhol, false — `interval` dan keyin */
+    /** true — first call right away, false — after `interval` */
     immediate?: boolean;
 };
 
@@ -37,7 +37,7 @@ export function usePolling<T>(
         controller = new AbortController();
         try {
             const result = await task(controller.signal);
-            if (myGeneration !== generation) return; // to'xtatilgan tsiklning javobi
+            if (myGeneration !== generation) return; // response from a stopped loop
             options.onResult(result);
             if (options.shouldContinue(result)) {
                 timer = setTimeout(

@@ -1,15 +1,17 @@
 <script setup lang="ts">
-// Oldin/keyin surgich. Natija rasmi yuqoridan pastga "mato yoyilgandek" ochiladi (clip-path).
-// Ramka natija rasmining o'z nisbatida (kesilmaydi) va ekran balandligiga sig'adi: to'liq bo'yli rasmda
-// oyoqlar ham ko'rinsin. Kirish va natija nisbati bir xil (backend OutputSize) — surgich ustma-ust tushadi.
+// Before/after slider. The result unrolls from the top "like cloth" (clip-path).
+// The frame uses the result's own aspect ratio (no cropping) and fits the viewport height, so a full-length
+// photo shows the feet too. Input and output share one aspect ratio (backend OutputSize), so the slider lines up.
 import { motion } from 'motion-v';
 import { computed, ref, useId } from 'vue';
+import { useI18n } from '@/shared/i18n';
 
 defineProps<{ before: string | null; after: string }>();
+const { t } = useI18n();
 const split = ref(55);
 const sliderId = useId();
 
-/** Natija yuklanguncha 2:3 (to'liq bo'yli kadr), keyin rasmning haqiqiy nisbati. */
+/** 2:3 (a full-length frame) until the result loads, then the image's real aspect ratio. */
 const ratio = ref(2 / 3);
 function onAfterLoad(event: Event): void {
     const img = event.target as HTMLImageElement;
@@ -31,7 +33,7 @@ const frameStyle = computed(() => ({
             <img
                 v-if="before"
                 :src="before"
-                alt="Oldin: sizning rasmingiz"
+                :alt="t('tryOn.compare.beforeAlt')"
                 class="absolute inset-0 h-full w-full object-cover"
             />
             <motion.div
@@ -43,7 +45,7 @@ const frameStyle = computed(() => ({
             >
                 <img
                     :src="after"
-                    alt="Keyin: tanlangan look'dagi natija"
+                    :alt="t('tryOn.compare.afterAlt')"
                     class="h-full w-full object-cover"
                     @load="onAfterLoad"
                 />
@@ -56,17 +58,19 @@ const frameStyle = computed(() => ({
             />
             <span
                 class="absolute top-4 left-4 rounded-full bg-ink/85 px-3 py-2 text-[13px] font-semibold text-chalk"
-                >Keyin</span
+                >{{ t('tryOn.compare.after') }}</span
             >
             <span
                 v-if="before"
                 class="absolute top-4 right-4 rounded-full bg-white/90 px-3 py-2 text-[13px] font-semibold text-ink"
-                >Oldin</span
+                >{{ t('tryOn.compare.before') }}</span
             >
         </div>
         <div v-if="before" class="flex items-center gap-3.5">
-            <label :for="sliderId" class="text-sm whitespace-nowrap text-slate"
-                >Solishtirish</label
+            <label
+                :for="sliderId"
+                class="text-sm whitespace-nowrap text-slate"
+                >{{ t('tryOn.compare.slider') }}</label
             >
             <input
                 :id="sliderId"
@@ -78,8 +82,7 @@ const frameStyle = computed(() => ({
             />
         </div>
         <p class="text-[13px] text-slate">
-            AI tasviri. Haqiqiy rang va naqsh biroz farq qilishi mumkin —
-            do'konda tkan namunasini ko'ring.
+            {{ t('tryOn.compare.disclaimer') }}
         </p>
     </div>
 </template>

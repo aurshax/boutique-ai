@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Maydon ostidagi xato (422 validatsiya yoki brauzer tekshiruvi). Bo'sh bo'lsa hech narsa chizilmaydi.
+// Error under a field (422 validation or a browser-side check). Renders nothing when empty.
 defineProps<{
     message?: string | null;
 }>();

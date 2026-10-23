@@ -33,7 +33,7 @@ class SizeSuggesterTest extends TestCase
 
     public function test_height_only_returns_middle_candidate(): void
     {
-        // 178 sm: 46, 48, 50, 52, 54, 56 mos keladi (6 ta) → intdiv(6, 2) = 3-indeks → 52
+        // 178 cm fits 46, 48, 50, 52, 54, 56 (6 sizes) → intdiv(6, 2) = index 3 → 52
         $this->assertSame('52', (new SizeSuggester)->suggest($this->trousers, 178));
     }
 

@@ -1,5 +1,5 @@
-// Hero fon videolari (public/media/hero, manbalar — public/media/CREDITS.md).
-// Desktop — gorizontal 1080p (webm + mp4 fallback), mobil — vertikal.
+// Hero background videos (public/media/hero, sources in public/media/CREDITS.md).
+// Desktop: landscape 1080p (webm + mp4 fallback); mobile: portrait.
 
 export type HeroMedia = {
     poster: string;
@@ -22,5 +22,5 @@ export const HERO_MEDIA: Record<'desktop' | 'mobile', HeroMedia> = {
     },
 };
 
-/** Lenta belgilari (sm) — hero pastidagi o'lchov tasmasi. */
+/** Tape marks (cm) for the measuring tape at the bottom of the hero. */
 export const TAPE_MARKS = [160, 166, 172, 178, 184, 190, 196];

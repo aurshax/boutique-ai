@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 
 /**
- * Tkan (mato).
+ * Fabric (cloth) a garment can be made of.
  *
  * @property int $id
  * @property string $slug

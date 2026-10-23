@@ -23,14 +23,14 @@ return new class extends Migration
             $table->id();
             $table->string('slug', 64)->unique();
             $table->string('name', 120);
-            $table->string('composition', 160);           // masalan: "100% jun, Super 110s"
+            $table->string('composition', 160);           // e.g. "100% wool, Super 110s"
             $table->string('pattern', 32);
-            $table->char('color_hex', 7);                 // asosiy rang, UI swatch uchun
+            $table->char('color_hex', 7);                 // main colour, for UI swatches
             $table->string('swatch_image')->nullable();   // public/media/fabrics/...
             $table->timestamps();
         });
 
-        // Postgres CHECK constraint — qiymatlar ro'yxati enum'dan olinadi.
+        // Postgres CHECK constraint — allowed values come from the enum.
         $patterns = "'".implode("','", FabricPattern::values())."'";
         DB::statement("ALTER TABLE fabrics ADD CONSTRAINT fabrics_pattern_check CHECK (pattern IN ({$patterns}))");
         DB::statement("ALTER TABLE fabrics ADD CONSTRAINT fabrics_color_hex_check CHECK (color_hex ~ '^#[0-9A-Fa-f]{6}$')");

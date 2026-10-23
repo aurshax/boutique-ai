@@ -2,10 +2,12 @@
 import { Link } from '@inertiajs/vue3';
 import type { StyleCard } from '@/entities/catalog';
 import { create as tryOn } from '@/routes/try-on';
+import { useI18n } from '@/shared/i18n';
 import { formatUzs } from '@/shared/lib/format';
 import Reveal from '@/shared/ui/Reveal.vue';
 
 defineProps<{ styles: StyleCard[] }>();
+const { t } = useI18n();
 </script>
 
 <template>
@@ -17,12 +19,12 @@ defineProps<{ styles: StyleCard[] }>();
             <h2
                 class="font-display text-4xl leading-[1.05] font-medium md:text-[52px]"
             >
-                Uslubni tanlang
+                {{ t('home.styles.title') }}
             </h2>
             <Link
                 :href="tryOn()"
                 class="text-base text-chalk hover:text-chalk-hover"
-                >Barcha look'lar →</Link
+                >{{ t('home.styles.allLooks') }}</Link
             >
         </Reveal>
         <div class="grid grid-cols-2 gap-4 md:gap-5 lg:grid-cols-4">
@@ -38,11 +40,13 @@ defineProps<{ styles: StyleCard[] }>();
                         <img
                             v-if="style.cover_image"
                             :src="style.cover_image"
-                            :alt="`${style.name} uslubidagi kostyum`"
+                            :alt="
+                                t('home.styles.coverAlt', { name: style.name })
+                            "
                             loading="lazy"
                             class="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-[1.04]"
                         />
-                        <!-- hover: tikuv chizig'i -->
+                        <!-- hover: stitch line -->
                         <span
                             class="pointer-events-none absolute inset-2.5 rounded-xl border-[1.5px] border-dashed border-chalk opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                             aria-hidden="true"
@@ -52,12 +56,20 @@ defineProps<{ styles: StyleCard[] }>();
                         <span class="text-lg font-semibold md:text-xl">{{
                             style.name
                         }}</span>
-                        <span class="font-mono text-[13px] text-fog"
-                            >{{ style.looks_count }} look</span
-                        >
+                        <span class="font-mono text-[13px] text-fog">{{
+                            t('home.styles.looks', style.looks_count)
+                        }}</span>
                     </div>
-                    <span v-if="style.from_price_uzs" class="text-sm text-fog"
-                        >{{ formatUzs(style.from_price_uzs) }} so'mdan</span
+                    <span
+                        v-if="style.from_price_uzs"
+                        class="text-sm text-fog"
+                        >{{
+                            t('home.styles.from', {
+                                price: t('common.uzs', {
+                                    amount: formatUzs(style.from_price_uzs),
+                                }),
+                            })
+                        }}</span
                     >
                 </Link>
             </Reveal>

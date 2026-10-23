@@ -23,7 +23,7 @@ return new class extends Migration
         Schema::create('look_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('look_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained()->restrictOnDelete(); // look'da ishlatilgan mahsulotni o'chirib bo'lmaydi
+            $table->foreignId('product_id')->constrained()->restrictOnDelete(); // a product used in a look cannot be deleted
             $table->smallInteger('position')->default(0);
 
             $table->unique(['look_id', 'product_id']);

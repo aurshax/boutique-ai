@@ -1,10 +1,10 @@
-// Inertia sahifa nomi → layout. Sahifa nomi = pages/ ichidagi yo'l (masalan "auth/LoginPage").
+// Inertia page name → layout. The page name is the path under pages/ (e.g. "auth/LoginPage").
 import type { Component } from 'vue';
 import AppLayout from './AppLayout.vue';
 import AuthLayout from './AuthLayout.vue';
 import SettingsLayout from './settings/Layout.vue';
 
-/** O'z header'iga ega to'liq ekranli sahifalar (boutique-ai sayti). */
+/** Full-screen pages with their own header (the boutique-ai site). */
 const STANDALONE = ['home/', 'try-on/'];
 
 export function resolveLayout(name: string): Component | Component[] | null {

@@ -24,7 +24,7 @@ class PruneTryOnRequestsTest extends TestCase
         Storage::disk('local')->put('uploads/shared.jpg', 'x');
 
         $old = $this->make(['upload_path' => 'uploads/old.jpg'], now()->subHours(30));
-        // shared.jpg: eski so'rov + yangi tkan almashtirish so'rovi → hali o'chmasligi kerak
+        // shared.jpg: an old request + a recent fabric-swap request → must not be deleted yet
         $this->make(['upload_path' => 'uploads/shared.jpg'], now()->subHours(30));
         $this->make(['upload_path' => 'uploads/shared.jpg'], now()->subHour());
 
@@ -69,7 +69,7 @@ class PruneTryOnRequestsTest extends TestCase
             ...$attributes,
         ]);
 
-        // created_at/updated_at ni qo'lda o'tmishga suramiz.
+        // Push created_at/updated_at into the past by hand.
         TryOnRequest::whereKey($tryOn->id)->update(['created_at' => $at, 'updated_at' => $at]);
 
         return $tryOn->fresh() ?? $tryOn;

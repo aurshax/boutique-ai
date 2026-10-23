@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from '@/shared/i18n';
 import Reveal from '@/shared/ui/Reveal.vue';
-import { HOW_STEPS } from '../model/content';
+import { HOW_STEP_NUMBERS } from '../model/content';
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -12,26 +15,26 @@ import { HOW_STEPS } from '../model/content';
             <h2
                 class="max-w-[620px] font-display text-4xl leading-[1.05] font-medium text-balance md:text-[52px]"
             >
-                Uch qadam — va siz ko'zgu oldidasiz.
+                {{ t('home.how.title') }}
             </h2>
             <p class="max-w-[420px] text-[17px] leading-relaxed text-fog">
-                Do'konga borishdan oldin fason, rang va tkanni o'z rasmingizda
-                solishtiring. Har bir natija taxminan 20–40 soniyada tayyor
-                bo'ladi.
+                {{ t('home.how.lead') }}
             </p>
         </Reveal>
         <ol class="grid gap-6 md:grid-cols-3">
             <Reveal
-                v-for="(step, i) in HOW_STEPS"
-                :key="step.no"
+                v-for="(no, i) in HOW_STEP_NUMBERS"
+                :key="no"
                 as="li"
                 :delay="i * 0.12"
                 class="flex min-h-[240px] flex-col gap-4 rounded-[18px] border-[1.5px] border-dashed border-chalk/55 p-8"
             >
-                <span class="font-mono text-sm text-chalk">{{ step.no }}</span>
-                <h3 class="text-2xl font-semibold">{{ step.title }}</h3>
+                <span class="font-mono text-sm text-chalk">{{ no }}</span>
+                <h3 class="text-2xl font-semibold">
+                    {{ t(`home.how.steps.${i}.title`) }}
+                </h3>
                 <p class="text-base leading-relaxed text-fog">
-                    {{ step.text }}
+                    {{ t(`home.how.steps.${i}.text`) }}
                 </p>
             </Reveal>
         </ol>

@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { create as tryOn } from '@/routes/try-on';
+import { useI18n } from '@/shared/i18n';
 import Reveal from '@/shared/ui/Reveal.vue';
 import { Button } from '@/shared/ui/button';
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -13,10 +16,10 @@ import { Button } from '@/shared/ui/button';
             as="h2"
             class="max-w-[900px] font-display text-5xl leading-[1.02] font-medium md:text-[64px]"
         >
-            Ko'zgu tayyor. Navbat — sizda.
+            {{ t('home.cta.title') }}
         </Reveal>
         <Button as-child variant="chalk" size="pill-lg">
-            <Link :href="tryOn()">Kiyinib ko'ring</Link>
+            <Link :href="tryOn()">{{ t('nav.tryOn') }}</Link>
         </Button>
     </section>
 </template>

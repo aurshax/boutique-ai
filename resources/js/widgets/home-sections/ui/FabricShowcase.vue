@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { FabricCard } from '@/entities/catalog';
+import { useI18n } from '@/shared/i18n';
 import { formatUzs } from '@/shared/lib/format';
 import Reveal from '@/shared/ui/Reveal.vue';
 import { FABRIC_OFFSETS } from '../model/content';
 
 defineProps<{ fabrics: FabricCard[] }>();
+const { t } = useI18n();
 </script>
 
 <template>
@@ -17,17 +19,15 @@ defineProps<{ fabrics: FabricCard[] }>();
                 <p
                     class="font-mono text-[13px] tracking-[0.16em] text-chalk uppercase"
                 >
-                    Bitta fason · istalgan tkan
+                    {{ t('home.fabrics.eyebrow') }}
                 </p>
                 <h2
                     class="font-display text-4xl leading-[1.05] font-medium md:text-5xl"
                 >
-                    Shimni boshqa tkanda ko'ring.
+                    {{ t('home.fabrics.title') }}
                 </h2>
                 <p class="text-[17px] leading-relaxed text-fog">
-                    Natija ekranida tkanni bosing — rasmingiz qayta yuklanmaydi,
-                    faqat shim yangi tkanda qayta tikiladi. Narx oldindan
-                    ko'rsatiladi.
+                    {{ t('home.fabrics.lead') }}
                 </p>
             </Reveal>
             <Reveal
@@ -45,7 +45,7 @@ defineProps<{ fabrics: FabricCard[] }>();
             >
                 <img
                     :src="fabric.swatch_image"
-                    :alt="`${fabric.name} tkani`"
+                    :alt="t('home.fabrics.alt', { name: fabric.name })"
                     loading="lazy"
                     class="aspect-[3/4] w-full rounded-[14px] object-cover"
                 />

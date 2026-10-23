@@ -1,41 +1,37 @@
 <script setup lang="ts">
 /**
- * 2-qadam: kutish. Rasm atrofida tikuv chizig'i taxminiy vaqt bo'yicha chiziladi (95% da to'xtaydi —
- * haqiqiy tugashni server aytadi), status matnlari almashadi, taymer.
+ * Step 2: waiting. A stitch line is drawn around the photo along the expected duration (stops at 95% —
+ * the server decides when it is really done), status lines rotate, and a timer runs.
  */
 import { motion } from 'motion-v';
 import { computed } from 'vue';
 import { useElapsedSeconds } from '@/shared/lib/composables/useElapsedSeconds';
+import { useI18n } from '@/shared/i18n';
 import { formatDuration } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
 import { injectTryOnFlow } from '../model/useTryOnFlow';
 
-/** Taxminiy generatsiya vaqti (s) — progress chizig'i shu bo'yicha yuradi. */
-const EXPECTED_SECONDS = 30;
+const { t, tm } = useI18n();
+const { form, current, summary, usesRealAi, discardPhoto } = injectTryOnFlow();
 
-const { form, current, summary, discardPhoto } = injectTryOnFlow();
+/** Expected duration (s) — drives the progress line. Real AI ≈ 20–60 s, the demo mock a few seconds. */
+const expectedSeconds = computed(() => (usesRealAi.value ? 45 : 5));
 const photoUrl = form.photoUrl;
 const status = computed(() => current.value?.status ?? 'queued');
 
-const MESSAGES = [
-    'Rasm tayyorlanmoqda…',
-    'Bichim moslanmoqda…',
-    'Mato tushirilmoqda…',
-    'Choklar tikilmoqda…',
-    "Yorug'lik moslanmoqda…",
-];
+const MESSAGE_COUNT = tm('tryOn.waiting.messages').length;
 const MESSAGE_EVERY_S = 4;
 
 const elapsed = useElapsedSeconds();
 const progress = computed(() =>
-    Math.min(0.95, elapsed.value / EXPECTED_SECONDS),
+    Math.min(0.95, elapsed.value / expectedSeconds.value),
 );
 const message = computed(() =>
     status.value === 'queued'
-        ? 'Navbatda…'
-        : MESSAGES[
-              Math.floor(elapsed.value / MESSAGE_EVERY_S) % MESSAGES.length
-          ],
+        ? t('tryOn.waiting.queued')
+        : t(
+              `tryOn.waiting.messages.${Math.floor(elapsed.value / MESSAGE_EVERY_S) % MESSAGE_COUNT}`,
+          ),
 );
 const backdrop = computed(() =>
     photoUrl.value
@@ -47,13 +43,13 @@ const backdrop = computed(() =>
 
 type StepState = 'done' | 'active' | 'pending';
 const steps = computed<{ label: string; state: StepState }[]>(() => [
-    { label: 'Rasm tozalandi va kichraytirildi', state: 'done' },
-    { label: 'Look va tkan tayyorlandi', state: 'done' },
+    { label: t('tryOn.waiting.steps.0'), state: 'done' },
+    { label: t('tryOn.waiting.steps.1'), state: 'done' },
     {
-        label: 'Kostyum tikilmoqda',
+        label: t('tryOn.waiting.steps.2'),
         state: status.value === 'running' ? 'active' : 'pending',
     },
-    { label: 'Natija', state: 'pending' },
+    { label: t('tryOn.waiting.steps.3'), state: 'pending' },
 ]);
 const markerClass: Record<StepState, string> = {
     done: 'bg-[#2E7D5B] text-white',
@@ -108,7 +104,7 @@ const markerClass: Record<StepState, string> = {
                 <p
                     class="font-mono text-xs tracking-[0.14em] text-chalk uppercase"
                 >
-                    AI tikmoqda · {{ summary }}
+                    {{ t('tryOn.waiting.eyebrow', { summary }) }}
                 </p>
                 <motion.p
                     :key="message"
@@ -121,7 +117,7 @@ const markerClass: Record<StepState, string> = {
                 <p class="font-mono text-[22px] tabular-nums">
                     {{ formatDuration(elapsed) }}
                     <span class="text-sm text-fog"
-                        >/ ~{{ formatDuration(EXPECTED_SECONDS) }}</span
+                        >/ ~{{ formatDuration(expectedSeconds) }}</span
                     >
                 </p>
             </div>
@@ -149,12 +145,14 @@ const markerClass: Record<StepState, string> = {
         </ol>
 
         <div class="flex flex-col gap-2">
-            <Button variant="pill-outline" size="pill" @click="discardPhoto"
-                >Kutishni to'xtatish</Button
+            <Button variant="pill-outline" size="pill" @click="discardPhoto">{{
+                t('tryOn.waiting.stop')
+            }}</Button>
+            <p
+                v-if="usesRealAi"
+                class="text-center text-xs leading-relaxed text-slate"
             >
-            <p class="text-center text-xs leading-relaxed text-slate">
-                So'rov allaqachon AI'ga yuborilgan — to'xtatsangiz ham to'lov
-                yechilishi mumkin. Rasmingiz o'chiriladi.
+                {{ t('tryOn.waiting.stopNote') }}
             </p>
         </div>
     </section>

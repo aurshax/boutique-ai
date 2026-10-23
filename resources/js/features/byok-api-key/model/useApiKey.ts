@@ -1,8 +1,8 @@
-// Mijozning OpenAI kaliti (BYOK). Odatda sessionStorage — tab yopilsa o'chadi;
-// "Eslab qolish" belgilansa — localStorage. Kalit hech qachon serverda saqlanmaydi.
+// The customer's own OpenAI key (BYOK). sessionStorage by default — cleared when the tab closes;
+// localStorage when "remember" is ticked. The key is never stored on the server.
 //
-// Module-level holat ataylab: kalit butun ilova uchun bitta (header'dagi "o'chirish" va forma
-// bir xil qiymatni ko'radi). SSR yo'q, shuning uchun so'rovlar orasida "oqish" xavfi ham yo'q.
+// Module-level state on purpose: one key for the whole app (the header's "remove" and the form
+// see the same value). There is no SSR, so nothing can leak between requests.
 import { computed, readonly, ref } from 'vue';
 import { safeStorage } from '@/shared/lib/storage';
 import { isValidApiKey, maskApiKey, normalizeApiKey } from './apiKey';

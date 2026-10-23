@@ -1,4 +1,4 @@
-// Komponent ko'ringan paytdan beri o'tgan soniyalar (kutish taymeri uchun).
+// Seconds since the component mounted (for the waiting timer).
 import { getCurrentScope, onScopeDispose, readonly, ref } from 'vue';
 
 export function useElapsedSeconds() {

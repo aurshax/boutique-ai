@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('looks', function (Blueprint $table) {
-            // true — pidjak va shim bir matodan (kostyum): tanlangan tkan ikkalasiga qo'llanadi.
-            // false — "separates": tkan faqat shimga.
+            // true — jacket and trousers share one fabric (a suit): the chosen fabric applies to both.
+            // false — "separates": the fabric applies to the trousers only.
             $table->boolean('is_suit')->default(false)->after('description');
         });
     }

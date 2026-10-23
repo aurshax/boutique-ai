@@ -1,5 +1,5 @@
-// Web Storage'ga xavfsiz kirish: private rejim, bloklangan cookie'lar, SSR yoki test (node) muhitida
-// `sessionStorage`/`localStorage` bo'lmasligi yoki xato tashlashi mumkin.
+// Safe Web Storage access: in private mode, with blocked cookies, during SSR or in tests (node)
+// `sessionStorage`/`localStorage` may be missing or throw.
 
 export type StorageKind = 'session' | 'local';
 
@@ -24,14 +24,14 @@ export const safeStorage = {
         try {
             resolve(kind)?.setItem(key, value);
         } catch {
-            // to'lgan yoki bloklangan — e'tiborsiz
+            // full or blocked — ignore
         }
     },
     remove(kind: StorageKind, key: string): void {
         try {
             resolve(kind)?.removeItem(key);
         } catch {
-            // e'tiborsiz
+            // ignore
         }
     },
 };

@@ -8,6 +8,6 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Mijoz rasmlarini TTL bo'yicha o'chirish (uploads 24 soat, results 7 kun) va osilib qolgan so'rovlarni yopish.
-// Lokalda ishga tushirish: sail artisan schedule:work
+// Delete customer images after their TTL (uploads 24 h, results 7 days) and close stuck requests.
+// Locally: sail artisan schedule:work. In production the platform runs `schedule:run` every minute.
 Schedule::command('try-on:prune')->hourly()->withoutOverlapping();

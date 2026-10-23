@@ -11,7 +11,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        // Testlar `npm run dev` (public/hot) yoki `npm run build` (manifest) ga bog'liq bo'lmasin.
+        // Tests must not depend on `npm run dev` (public/hot) or `npm run build` (manifest).
         $this->withoutVite();
     }
 

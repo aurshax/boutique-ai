@@ -1,19 +1,19 @@
-// Ko'rsatish uchun formatlash — loyihadagi yagona manba. Pure funksiyalar, Vue'ga bog'liq emas.
+// Display formatting — the single source in the project. Pure functions, no Vue.
 
-/** 4357000 → "4 357 000" (minglik ajratuvchi — oddiy bo'shliq, so'm uchun odatiy yozuv). */
+const integer = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+
+/** 4357000 → "4,357,000" (amount only; the UI adds the currency: t('common.uzs', { amount })). */
 export function formatUzs(amount: number): string {
-    return Math.round(amount)
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return integer.format(Math.round(amount));
 }
 
-/** 130000 → "+130k", 0 → "0" — tkan ustamasi kabi qisqa belgilar uchun. */
+/** 130000 → "+130k", 0 → "0" — short labels such as a fabric surcharge. */
 export function formatShortSurcharge(amount: number): string {
     if (amount <= 0) return '0';
     return amount >= 1000 ? `+${Math.round(amount / 1000)}k` : `+${amount}`;
 }
 
-/** 0.05 → "$0.05"; digits — kasr xonalari. */
+/** 0.05 → "$0.05"; digits = decimal places. */
 export function formatUsd(amount: number, digits = 2): string {
     return `$${amount.toFixed(digits)}`;
 }

@@ -5,9 +5,9 @@ namespace App\TryOn\Data;
 final readonly class TryOnResult
 {
     /**
-     * @param  string  $imageBytes  natija rasmi (PNG yoki JPEG bytes)
-     * @param  string|null  $costUsd  decimal satr ko'rinishida ("0.0512"), float emas
-     * @param  array<string, mixed>  $usage  provider qaytargan token statistikasi
+     * @param  string  $imageBytes  result image (PNG or JPEG bytes)
+     * @param  string|null  $costUsd  decimal string ("0.0512"), never a float
+     * @param  array<string, mixed>  $usage  token usage returned by the provider
      */
     public function __construct(
         public string $imageBytes,

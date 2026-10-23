@@ -13,9 +13,9 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * TEST katalogi: uslublar, tkanlar, mahsulotlar, look'lar va razmer jadvallari.
- * Narxlar va o'lchamlar taxminiy, faqat development uchun.
- * Qayta ishga tushirsa bo'ladi (updateOrCreate — slug bo'yicha).
+ * TEST catalogue: styles, fabrics, products, looks and size charts.
+ * Prices and measurements are rough, for development and the demo only.
+ * Safe to re-run (updateOrCreate by slug).
  */
 class CatalogSeeder extends Seeder
 {
@@ -34,19 +34,19 @@ class CatalogSeeder extends Seeder
     private function seedFabrics(): array
     {
         $rows = [
-            ['navy-wool', "To'q ko'k jun", '100% jun, Super 110s', FabricPattern::Plain, '#1F2A44'],
-            ['charcoal-pinstripe', 'Antrasit pinstripe', '100% jun, Super 120s', FabricPattern::Pinstripe, '#36393F'],
-            ['grey-check', 'Kulrang katak (Prince of Wales)', "95% jun, 5% kashemir", FabricPattern::Check, '#7A7D82'],
-            ['brown-herringbone', 'Jigarrang herringbone', '100% jun, tvid', FabricPattern::Herringbone, '#6B4F3A'],
-            ['mid-grey-birdseye', "O'rta kulrang birdseye", '100% jun, Super 100s', FabricPattern::Birdseye, '#8A8D91'],
-            ['beige-linen', "Bej zig'ir", "55% zig'ir, 45% paxta", FabricPattern::Plain, '#CDBA96'],
-            ['light-grey-flannel', 'Och kulrang flanel', '100% jun, flanel', FabricPattern::Plain, '#A9ACB0'],
-            ['olive-tweed', 'Zaytun rang tvid', '100% jun, Donegal tvid', FabricPattern::Tweed, '#5E5B3C'],
+            ['navy-wool', 'Navy wool', '100% wool, Super 110s', FabricPattern::Plain, '#1F2A44'],
+            ['charcoal-pinstripe', 'Charcoal pinstripe', '100% wool, Super 120s', FabricPattern::Pinstripe, '#36393F'],
+            ['grey-check', 'Grey check (Prince of Wales)', '95% wool, 5% cashmere', FabricPattern::Check, '#7A7D82'],
+            ['brown-herringbone', 'Brown herringbone', '100% wool tweed', FabricPattern::Herringbone, '#6B4F3A'],
+            ['mid-grey-birdseye', 'Mid-grey birdseye', '100% wool, Super 100s', FabricPattern::Birdseye, '#8A8D91'],
+            ['beige-linen', 'Beige linen', '55% linen, 45% cotton', FabricPattern::Plain, '#CDBA96'],
+            ['light-grey-flannel', 'Light grey flannel', '100% wool flannel', FabricPattern::Plain, '#A9ACB0'],
+            ['olive-tweed', 'Olive tweed', '100% wool, Donegal tweed', FabricPattern::Tweed, '#5E5B3C'],
         ];
 
         $out = [];
-        // Swatch: avval AI bilan yaratilgan namuna (catalog:generate-images → media/fabrics/swatch-{slug}.webp),
-        // bo'lmasa — Unsplash'dagi eski teksturalar (Home vitrinasi uchun), bo'lmasa — null (UI rang bilan ko'rsatadi).
+        // Swatch: the AI-generated one first (catalog:generate-images → media/fabrics/swatch-{slug}.webp),
+        // then the older Unsplash textures (Home showcase), otherwise null (the UI falls back to the colour).
         $legacy = [
             'grey-check' => 'media/fabrics/fabric-navy-check-grey-twill.webp',
             'mid-grey-birdseye' => 'media/fabrics/fabric-olive-houndstooth.webp',
@@ -73,58 +73,58 @@ class CatalogSeeder extends Seeder
     private function seedProducts(array $fabrics): array
     {
         // [slug, type, name, price_uzs, default_fabric, description (EN)]
-        // description — inglizcha VIZUAL tavsif: catalog:generate-images uni rasm uchun, PromptBuilder esa
-        // try-on promptida ishlatadi (model inglizcha tavsifni aniqroq tushunadi). UI'da ko'rsatilmaydi.
+        // description — a VISUAL description: catalog:generate-images uses it for the product photo and
+        // PromptBuilder for the try-on prompt. It is not shown in the UI.
         $rows = [
-            // Shimlar
-            ['trousers-navy-classic', ProductType::Trousers, "Klassik shim, to'q ko'k", 690_000, 'navy-wool',
+            // Trousers
+            ['trousers-navy-classic', ProductType::Trousers, 'Classic navy trousers', 690_000, 'navy-wool',
                 'navy blue wool suit trousers, flat front, slim straight leg, pressed centre crease, plain hem'],
-            ['trousers-charcoal-pinstripe', ProductType::Trousers, 'Pinstripe shim, antrasit', 790_000, 'charcoal-pinstripe',
+            ['trousers-charcoal-pinstripe', ProductType::Trousers, 'Charcoal pinstripe trousers', 790_000, 'charcoal-pinstripe',
                 'charcoal grey wool trousers with fine white pinstripes, single forward pleat, straight leg, pressed crease'],
-            ['trousers-grey-check', ProductType::Trousers, 'Katak shim, kulrang', 820_000, 'grey-check',
+            ['trousers-grey-check', ProductType::Trousers, 'Grey check trousers', 820_000, 'grey-check',
                 'grey Prince of Wales check wool trousers, flat front, tapered leg, pressed crease'],
-            ['trousers-beige-linen', ProductType::Trousers, "Zig'ir shim, bej", 590_000, 'beige-linen',
+            ['trousers-beige-linen', ProductType::Trousers, 'Beige linen trousers', 590_000, 'beige-linen',
                 'beige linen-cotton summer trousers, relaxed straight leg, drawstring-free waistband with belt loops, natural slub texture'],
-            ['trousers-light-grey-flannel', ProductType::Trousers, 'Flanel shim, och kulrang', 760_000, 'light-grey-flannel',
+            ['trousers-light-grey-flannel', ProductType::Trousers, 'Light grey flannel trousers', 760_000, 'light-grey-flannel',
                 'light grey wool flannel trousers, double forward pleats, high rise, wide straight leg, turn-up cuffs'],
-            // Blazerlar
-            ['blazer-navy', ProductType::Blazer, "Blazer, to'q ko'k jun", 1_890_000, 'navy-wool',
+            // Blazers
+            ['blazer-navy', ProductType::Blazer, 'Navy wool blazer', 1_890_000, 'navy-wool',
                 'navy blue wool single-breasted two-button blazer, notch lapels, flap pockets, soft natural shoulder'],
-            ['blazer-brown-herringbone', ProductType::Blazer, 'Blazer, jigarrang herringbone', 2_190_000, 'brown-herringbone',
+            ['blazer-brown-herringbone', ProductType::Blazer, 'Brown herringbone blazer', 2_190_000, 'brown-herringbone',
                 'brown herringbone wool sport coat, single-breasted two-button, notch lapels, patch pockets'],
-            ['blazer-grey-birdseye', ProductType::Blazer, 'Blazer, kulrang birdseye', 2_050_000, 'mid-grey-birdseye',
+            ['blazer-grey-birdseye', ProductType::Blazer, 'Grey birdseye blazer', 2_050_000, 'mid-grey-birdseye',
                 'mid grey birdseye wool suit jacket, single-breasted two-button, notch lapels, jetted pockets'],
-            ['blazer-olive-tweed', ProductType::Blazer, 'Blazer, zaytun tvid', 2_290_000, 'olive-tweed',
+            ['blazer-olive-tweed', ProductType::Blazer, 'Olive tweed blazer', 2_290_000, 'olive-tweed',
                 'olive green Donegal tweed sport coat with flecks, single-breasted three-roll-two, patch pockets, suede elbow patches'],
-            // Ko'ylaklar
-            ['shirt-white-poplin', ProductType::Shirt, "Oq ko'ylak, poplin", 349_000, null,
+            // Shirts
+            ['shirt-white-poplin', ProductType::Shirt, 'White poplin shirt', 349_000, null,
                 'crisp white cotton poplin dress shirt, semi-spread collar, long sleeves, button cuffs'],
-            ['shirt-light-blue-oxford', ProductType::Shirt, "Och havorang ko'ylak, oxford", 389_000, null,
+            ['shirt-light-blue-oxford', ProductType::Shirt, 'Light blue oxford shirt', 389_000, null,
                 'light blue cotton oxford shirt, button-down collar, long sleeves'],
-            ['shirt-cream-knit-polo', ProductType::Shirt, 'Krem trikotaj polo', 429_000, null,
+            ['shirt-cream-knit-polo', ProductType::Shirt, 'Cream knit polo', 429_000, null,
                 'cream knitted cotton polo shirt, three-button placket, short sleeves, ribbed collar'],
-            ['shirt-pink-oxford', ProductType::Shirt, "Pushti ko'ylak, oxford", 389_000, null,
+            ['shirt-pink-oxford', ProductType::Shirt, 'Pink oxford shirt', 389_000, null,
                 'pale pink cotton oxford shirt, button-down collar, long sleeves'],
-            ['shirt-black-turtleneck', ProductType::Shirt, 'Qora merino turtleneck', 459_000, null,
+            ['shirt-black-turtleneck', ProductType::Shirt, 'Black merino turtleneck', 459_000, null,
                 'black fine merino wool turtleneck sweater, slim fit, long sleeves, ribbed cuffs'],
-            // Galstuklar
-            ['tie-burgundy-silk', ProductType::Tie, "Galstuk, to'q qizil ipak", 189_000, null,
+            // Ties
+            ['tie-burgundy-silk', ProductType::Tie, 'Burgundy silk tie', 189_000, null,
                 'burgundy silk necktie with a subtle diagonal twill texture, classic 8 cm width'],
-            ['tie-navy-grenadine', ProductType::Tie, "Galstuk, to'q ko'k grenadin", 219_000, null,
+            ['tie-navy-grenadine', ProductType::Tie, 'Navy grenadine tie', 219_000, null,
                 'navy blue silk grenadine necktie with an open woven texture, 7.5 cm width'],
-            ['tie-green-knit', ProductType::Tie, 'Galstuk, yashil trikotaj', 199_000, null,
+            ['tie-green-knit', ProductType::Tie, 'Green knit tie', 199_000, null,
                 'forest green knitted silk tie with a square bottom end'],
-            // Kamarlar
-            ['belt-black-leather', ProductType::Belt, 'Kamar, qora teri', 249_000, null,
+            // Belts
+            ['belt-black-leather', ProductType::Belt, 'Black leather belt', 249_000, null,
                 'black smooth leather dress belt, 3 cm wide, polished silver rectangular buckle'],
-            ['belt-brown-suede', ProductType::Belt, 'Kamar, jigarrang zamsh', 269_000, null,
+            ['belt-brown-suede', ProductType::Belt, 'Brown suede belt', 269_000, null,
                 'dark brown suede casual belt, 3.5 cm wide, brushed brass buckle'],
-            // Poyabzal
-            ['shoes-black-oxford', ProductType::Shoes, 'Oxford tufli, qora', 990_000, null,
+            // Shoes
+            ['shoes-black-oxford', ProductType::Shoes, 'Black oxford shoes', 990_000, null,
                 'black polished calf leather cap-toe oxford shoes, closed lacing, leather soles'],
-            ['shoes-brown-loafer', ProductType::Shoes, 'Loafer, jigarrang zamsh', 890_000, null,
+            ['shoes-brown-loafer', ProductType::Shoes, 'Brown suede loafers', 890_000, null,
                 'brown suede penny loafers, slip-on, leather soles'],
-            ['shoes-dark-brown-derby', ProductType::Shoes, 'Derby tufli, to\'q jigarrang', 940_000, null,
+            ['shoes-dark-brown-derby', ProductType::Shoes, 'Dark brown derby shoes', 940_000, null,
                 'dark brown burnished leather plain-toe derby shoes, open lacing, rubber commando soles'],
         ];
 
@@ -145,14 +145,14 @@ class CatalogSeeder extends Seeder
     }
 
     /**
-     * Shim va blazerlarni qaysi tkanlarda tikish mumkin (tkan almashtirish uchun).
+     * Which fabrics trousers and blazers can be made in (for fabric swaps).
      *
      * @param  array<string, Product>  $products
      * @param  array<string, Fabric>  $fabrics
      */
     private function seedFabricLinks(array $products, array $fabrics): void
     {
-        // tkan slug => ustama narx (so'm)
+        // fabric slug => surcharge (UZS)
         $woolOptions = [
             'navy-wool' => 0,
             'charcoal-pinstripe' => 100_000,
@@ -181,13 +181,13 @@ class CatalogSeeder extends Seeder
     }
 
     /**
-     * Razmer jadvali (taxminiy, O'zbekiston/MDH razmerlari 44–56).
+     * Size chart (approximate, Uzbekistan/CIS sizes 44–56).
      *
      * @param  array<string, Product>  $products
      */
     private function seedSizeCharts(array $products): void
     {
-        // razmer => [bo'y min, bo'y max, bel min, bel max]
+        // size => [height min, height max, waist min, waist max]
         $chart = [
             '44' => [158, 172, 70, 75],
             '46' => [164, 178, 76, 80],
@@ -208,7 +208,7 @@ class CatalogSeeder extends Seeder
                     ['product_id' => $product->id, 'size' => (string) $size],
                     [
                         'height_cm' => [$hMin, $hMax],
-                        // Blazer uchun bel o'lchami ishlatilmaydi.
+                        // Waist is not used for blazers.
                         'waist_cm' => $product->type === ProductType::Trousers ? [$wMin, $wMax] : null,
                     ],
                 );
@@ -220,23 +220,23 @@ class CatalogSeeder extends Seeder
     private function seedStylesAndLooks(array $products): void
     {
         $styles = [
-            ['classic', 'Classic', "Vaqt sinovidan o'tgan, rasmiy uchrashuvlar uchun", 1, 'media/hero/look-black-suit.webp', [
-                ['classic-navy-suit', "To'q ko'k klassika", true, ['trousers-navy-classic', 'blazer-navy', 'shirt-white-poplin', 'tie-burgundy-silk', 'belt-black-leather', 'shoes-black-oxford']],
-                ['classic-charcoal', 'Antrasit pinstripe', false, ['trousers-charcoal-pinstripe', 'blazer-grey-birdseye', 'shirt-white-poplin', 'tie-navy-grenadine', 'belt-black-leather', 'shoes-black-oxford']],
+            ['classic', 'Classic', 'Timeless pieces for formal occasions', 1, 'media/hero/look-black-suit.webp', [
+                ['classic-navy-suit', 'Navy Classic', true, ['trousers-navy-classic', 'blazer-navy', 'shirt-white-poplin', 'tie-burgundy-silk', 'belt-black-leather', 'shoes-black-oxford']],
+                ['classic-charcoal', 'Charcoal Pinstripe', false, ['trousers-charcoal-pinstripe', 'blazer-grey-birdseye', 'shirt-white-poplin', 'tie-navy-grenadine', 'belt-black-leather', 'shoes-black-oxford']],
             ]],
-            ['office', 'Office', "Har kunlik ofis uchun, galstuksiz ham bo'ladi", 2, 'media/hero/look-grey-blazer-stairs.webp', [
-                ['office-grey-check', 'Kulrang katak', false, ['trousers-grey-check', 'blazer-navy', 'shirt-light-blue-oxford', 'belt-black-leather', 'shoes-black-oxford']],
-                ['office-navy-oxford', "To'q ko'k va oxford", false, ['trousers-navy-classic', 'shirt-light-blue-oxford', 'tie-navy-grenadine', 'belt-brown-suede', 'shoes-brown-loafer']],
-                ['office-flannel', 'Flanel va pushti', false, ['trousers-light-grey-flannel', 'blazer-navy', 'shirt-pink-oxford', 'tie-green-knit', 'belt-brown-suede', 'shoes-dark-brown-derby']],
+            ['office', 'Office', 'Everyday office wear, with or without a tie', 2, 'media/hero/look-grey-blazer-stairs.webp', [
+                ['office-grey-check', 'Grey Check', false, ['trousers-grey-check', 'blazer-navy', 'shirt-light-blue-oxford', 'belt-black-leather', 'shoes-black-oxford']],
+                ['office-navy-oxford', 'Navy & Oxford', false, ['trousers-navy-classic', 'shirt-light-blue-oxford', 'tie-navy-grenadine', 'belt-brown-suede', 'shoes-brown-loafer']],
+                ['office-flannel', 'Flannel & Pink', false, ['trousers-light-grey-flannel', 'blazer-navy', 'shirt-pink-oxford', 'tie-green-knit', 'belt-brown-suede', 'shoes-dark-brown-derby']],
             ]],
-            ['smart-casual', 'Smart Casual', 'Rasmiy va erkin uslub orasida', 3, 'media/hero/look-navy-suit.webp', [
+            ['smart-casual', 'Smart Casual', 'Between formal and relaxed', 3, 'media/hero/look-navy-suit.webp', [
                 ['smart-navy-knit', 'Navy Knit', true, ['trousers-navy-classic', 'blazer-navy', 'shirt-cream-knit-polo', 'belt-brown-suede', 'shoes-brown-loafer']],
-                ['smart-herringbone', 'Herringbone kech', false, ['trousers-charcoal-pinstripe', 'blazer-brown-herringbone', 'shirt-cream-knit-polo', 'belt-brown-suede', 'shoes-brown-loafer']],
-                ['smart-tweed', 'Tvid va turtleneck', false, ['trousers-light-grey-flannel', 'blazer-olive-tweed', 'shirt-black-turtleneck', 'belt-brown-suede', 'shoes-dark-brown-derby']],
+                ['smart-herringbone', 'Herringbone Evening', false, ['trousers-charcoal-pinstripe', 'blazer-brown-herringbone', 'shirt-cream-knit-polo', 'belt-brown-suede', 'shoes-brown-loafer']],
+                ['smart-tweed', 'Tweed & Turtleneck', false, ['trousers-light-grey-flannel', 'blazer-olive-tweed', 'shirt-black-turtleneck', 'belt-brown-suede', 'shoes-dark-brown-derby']],
             ]],
-            ['summer', 'Yozgi', "Issiq kunlar uchun yengil matolar", 4, 'media/hero/look-pinstripe-double-breasted.webp', [
-                ['summer-linen', "Zig'ir yoz", false, ['trousers-beige-linen', 'shirt-white-poplin', 'belt-brown-suede', 'shoes-brown-loafer']],
-                ['summer-linen-oxford', "Zig'ir va oxford", false, ['trousers-beige-linen', 'shirt-light-blue-oxford', 'belt-brown-suede', 'shoes-brown-loafer']],
+            ['summer', 'Summer', 'Light fabrics for hot days', 4, 'media/hero/look-pinstripe-double-breasted.webp', [
+                ['summer-linen', 'Linen Summer', false, ['trousers-beige-linen', 'shirt-white-poplin', 'belt-brown-suede', 'shoes-brown-loafer']],
+                ['summer-linen-oxford', 'Linen & Oxford', false, ['trousers-beige-linen', 'shirt-light-blue-oxford', 'belt-brown-suede', 'shoes-brown-loafer']],
             ]],
         ];
 
@@ -248,7 +248,7 @@ class CatalogSeeder extends Seeder
                 'sort' => $sort,
             ]);
 
-            // [slug, nom, is_suit (pidjak va shim bir matodan), mahsulotlar]
+            // [slug, name, is_suit (jacket and trousers in one fabric), products]
             foreach ($looks as $i => [$lookSlug, $lookName, $isSuit, $productSlugs]) {
                 $look = Look::updateOrCreate(['slug' => $lookSlug], [
                     'style_id' => $style->id,
@@ -266,7 +266,7 @@ class CatalogSeeder extends Seeder
         }
     }
 
-    /** public/ ichida fayl bo'lsa — nisbiy yo'l, aks holda null (rasm hali generatsiya qilinmagan). */
+    /** The relative path when the file exists under public/, otherwise null (image not generated yet). */
     private function existing(?string $relative): ?string
     {
         return $relative !== null && is_file(public_path($relative)) ? $relative : null;

@@ -8,17 +8,17 @@ use Illuminate\Support\Facades\Vite;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Xavfsizlik sarlavhalari va qat'iy Content-Security-Policy.
+ * Security headers and a strict Content-Security-Policy.
  *
- * Nima uchun muhim: mijozning OpenAI kaliti brauzerda (sessionStorage) turadi.
- * XSS bo'lsa — kalit o'g'irlanadi. CSP begona va inline skriptlarni bloklaydi:
- * faqat bizning serverdan va nonce bilan belgilangan skriptlar ishlaydi.
+ * Why it matters: the customer's OpenAI key lives in the browser (sessionStorage).
+ * Any XSS would leak it. The CSP blocks foreign and inline scripts:
+ * only scripts from our origin or carrying the per-request nonce may run.
  */
 class SecurityHeaders
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Har so'rov uchun yangi nonce; @vite teglari va app.blade.php dagi inline skript shu nonce'ni oladi.
+        // A fresh nonce per request; @vite tags and the inline script in app.blade.php receive it.
         Vite::useCspNonce();
 
         $response = $next($request);
@@ -34,18 +34,18 @@ class SecurityHeaders
 
     private function policy(?string $nonce): string
     {
-        $dev = $this->viteDevServer();                 // 'http://localhost:5173' yoki null
+        $dev = $this->viteDevServer();                 // 'http://127.0.0.1:5173' or null
         $devWs = $dev !== null ? preg_replace('#^http#', 'ws', $dev) : null;
 
         $directives = [
             'default-src' => ["'self'"],
             'script-src' => array_filter(["'self'", $nonce !== null ? "'nonce-{$nonce}'" : null, $dev]),
-            // Vue/Tailwind (dev) <style> teglarini JS orqali qo'shadi — shuning uchun 'unsafe-inline' faqat stillar uchun.
+            // Vue/Tailwind (dev) inject <style> tags from JS — so 'unsafe-inline' is allowed for styles only.
             'style-src' => array_filter(["'self'", "'unsafe-inline'", 'https://fonts.bunny.net', $dev]),
             'font-src' => array_filter(["'self'", 'data:', 'https://fonts.bunny.net', $dev]),
             'img-src' => ["'self'", 'data:', 'blob:'],
             'media-src' => ["'self'"],
-            'connect-src' => array_filter(["'self'", $dev, $devWs]),   // OpenAI'ga brauzer emas, server ulanadi
+            'connect-src' => array_filter(["'self'", $dev, $devWs]),   // the server talks to OpenAI, never the browser
             'object-src' => ["'none'"],
             'base-uri' => ["'self'"],
             'form-action' => ["'self'"],
@@ -57,7 +57,7 @@ class SecurityHeaders
             ->implode('; ');
     }
 
-    /** `npm run dev` ishlayotgan bo'lsa, public/hot faylida Vite manzili turadi. */
+    /** While `npm run dev` runs, public/hot holds the Vite dev server URL (local environment only). */
     private function viteDevServer(): ?string
     {
         if (! app()->isLocal() || ! Vite::isRunningHot()) {

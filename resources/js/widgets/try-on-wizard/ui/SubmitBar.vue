@@ -1,11 +1,14 @@
 <script setup lang="ts">
-// Pastki panel (1-qadamda): look narxi, razmer, sifat, taxminiy xarajat va "Kiyintirish".
+// Bottom bar (setup step): look price, size, quality, estimated cost and "Dress me".
 import { QUALITY_OPTIONS } from '@/entities/try-on-request';
+import { useI18n } from '@/shared/i18n';
 import { formatUzs } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
 import { injectTryOnFlow } from '../model/useTryOnFlow';
 
-const { form, canSubmit, submitting, estimate, generate } = injectTryOnFlow();
+const { t } = useI18n();
+const { form, canSubmit, submitting, estimate, usesRealAi, generate } =
+    injectTryOnFlow();
 const { total, size, quality } = form;
 </script>
 
@@ -18,13 +21,13 @@ const { total, size, quality } = form;
         >
             <div class="flex flex-wrap gap-6 text-sm text-slate">
                 <span
-                    >Look
-                    <strong class="ml-1.5 font-mono text-lg text-ink"
-                        >{{ formatUzs(total) }} so'm</strong
-                    ></span
+                    >{{ t('tryOn.submit.look') }}
+                    <strong class="ml-1.5 font-mono text-lg text-ink">{{
+                        t('common.uzs', { amount: formatUzs(total) })
+                    }}</strong></span
                 >
                 <span v-if="size" class="hidden sm:inline"
-                    >Razmer
+                    >{{ t('tryOn.submit.size') }}
                     <strong class="ml-1.5 font-mono text-lg text-ink">{{
                         size
                     }}</strong></span
@@ -32,8 +35,9 @@ const { total, size, quality } = form;
             </div>
             <div class="flex flex-wrap items-center gap-3.5">
                 <div
+                    v-if="usesRealAi"
                     role="radiogroup"
-                    aria-label="Sifat"
+                    :aria-label="t('tryOn.submit.quality')"
                     class="flex rounded-full bg-paper p-1"
                 >
                     <button
@@ -50,12 +54,14 @@ const { total, size, quality } = form;
                         "
                         @click="quality = option.value"
                     >
-                        {{ option.label }}
+                        {{ t(option.labelKey) }}
                     </button>
                 </div>
-                <span class="font-mono text-sm text-[#3D4553]"
-                    >≈ {{ estimate }}</span
-                >
+                <span class="font-mono text-sm text-[#3D4553]">{{
+                    usesRealAi
+                        ? t('tryOn.submit.estimate', { estimate })
+                        : t('tryOn.submit.demo')
+                }}</span>
                 <Button
                     variant="brand"
                     size="pill"
@@ -63,7 +69,11 @@ const { total, size, quality } = form;
                     :disabled="!canSubmit"
                     @click="generate"
                 >
-                    {{ submitting ? 'Yuborilmoqda…' : 'Kiyintirish →' }}
+                    {{
+                        submitting
+                            ? t('tryOn.submit.submitting')
+                            : t('tryOn.submit.submit')
+                    }}
                 </Button>
             </div>
         </div>

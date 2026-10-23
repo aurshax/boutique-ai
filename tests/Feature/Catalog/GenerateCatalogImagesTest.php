@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-/** OpenAI'ga so'rov ketmaydi (Http::fake), fayllar vaqtinchalik papkaga yoziladi — public/ ifloslanmaydi. */
+/** No real OpenAI calls (Http::fake); files go to a temp dir so public/ stays clean. */
 class GenerateCatalogImagesTest extends TestCase
 {
     use RefreshDatabase;
@@ -44,7 +44,7 @@ class GenerateCatalogImagesTest extends TestCase
         ])]);
 
         $this->artisan('catalog:generate-images', ['--only' => ['tie-green-knit', 'olive-tweed']])
-            ->expectsQuestion('OpenAI API kaliti', self::KEY)
+            ->expectsQuestion('OpenAI API key', self::KEY)
             ->assertSuccessful();
 
         $this->assertFileExists("{$this->dir}/media/catalog/tie-green-knit.webp");
@@ -65,11 +65,11 @@ class GenerateCatalogImagesTest extends TestCase
         File::put("{$this->dir}/media/catalog/tie-green-knit.webp", 'x');
 
         $this->artisan('catalog:generate-images', ['--only' => ['tie-green-knit']])
-            ->expectsOutputToContain('Hamma rasmlar bor')
+            ->expectsOutputToContain('All images exist')
             ->assertSuccessful();
 
         $this->artisan('catalog:generate-images', ['--only' => ['belt-black-leather'], '--dry-run' => true])
-            ->expectsOutputToContain('1 ta rasm yaratiladi')
+            ->expectsOutputToContain('1 image(s) will be generated')
             ->assertSuccessful();
 
         Http::assertNothingSent();
@@ -80,7 +80,7 @@ class GenerateCatalogImagesTest extends TestCase
         Http::fake(['*' => Http::response(['error' => ['code' => 'invalid_api_key', 'message' => 'bad key']], 401)]);
 
         $this->artisan('catalog:generate-images', ['--only' => ['tie-green-knit', 'belt-black-leather']])
-            ->expectsQuestion('OpenAI API kaliti', self::KEY)
+            ->expectsQuestion('OpenAI API key', self::KEY)
             ->assertFailed();
 
         Http::assertSentCount(1);

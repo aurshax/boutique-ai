@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
-/** Natija diskdagi rasmlarga bog'liq bo'lmasin: rasmlar vaqtinchalik papkada (catalog_media_path). */
+/** Results must not depend on images on disk: they live in a temp dir (catalog_media_path). */
 class PromptBuilderTest extends TestCase
 {
     use RefreshDatabase;
@@ -37,7 +37,7 @@ class PromptBuilderTest extends TestCase
         $built = $this->build();
 
         $this->assertStringContainsString('178 cm', $built['prompt']);
-        $this->assertStringContainsString('Kulrang katak', $built['prompt']);
+        $this->assertStringContainsString('Grey check', $built['prompt']);
         $this->assertStringContainsString('trousers: navy blue wool suit trousers', $built['prompt']);   // inglizcha tavsif
         $this->assertStringContainsString('Keep his face', $built['prompt']);
         $this->assertStringContainsString('Do not slim', $built['prompt']);                                 // v3
@@ -50,8 +50,8 @@ class PromptBuilderTest extends TestCase
         $prompt = $this->build()['prompt'];   // smart-navy-knit — kostyum
 
         $this->assertStringContainsString('matching suit', $prompt);
-        $this->assertMatchesRegularExpression('/- blazer: .*\(in Kulrang katak/', $prompt);
-        $this->assertMatchesRegularExpression('/- trousers: .*\(in Kulrang katak/', $prompt);
+        $this->assertMatchesRegularExpression('/- blazer: .*\(in Grey check/', $prompt);
+        $this->assertMatchesRegularExpression('/- trousers: .*\(in Grey check/', $prompt);
         $this->assertStringContainsString('cut and style only', $prompt);
     }
 
@@ -81,13 +81,13 @@ class PromptBuilderTest extends TestCase
         $this->assertCount($count + 1, $built['references']);
         $this->assertSame('trousers', $built['references'][0]->label);
         $this->assertSame('fabric swatch', $built['references'][$count]->label);
-        $this->assertStringContainsString('(see image 2)', $built['prompt']);            // 1-rasm — mijoz
+        $this->assertStringContainsString('(see image 2)', $built['prompt']);            // image 1 is the customer
         $this->assertStringContainsString('fabric swatch in image '.($count + 2), $built['prompt']);
     }
 
     public function test_path_traversal_in_image_path_is_ignored(): void
     {
-        $this->fakeFile('outside.webp');   // vaqtinchalik papkada bor, lekin yo'l '..' bilan berilgan
+        $this->fakeFile('outside.webp');   // exists in the temp dir, but the path uses '..'
         Product::where('slug', 'trousers-navy-classic')->update(['image' => 'media/../outside.webp']);
 
         $this->assertCount(0, $this->build()['references']);

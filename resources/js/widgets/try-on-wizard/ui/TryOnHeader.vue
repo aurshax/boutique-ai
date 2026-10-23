@@ -1,13 +1,16 @@
 <script setup lang="ts">
-// Wizard header'i: logo, qadamlar, kalit holati.
+// Wizard header: logo, steps and key status.
 import { ApiKeyBadge } from '@/features/byok-api-key';
+import type { KeyMode } from '@/features/byok-api-key';
+import { useI18n } from '@/shared/i18n';
 import BrandLogo from '@/shared/ui/BrandLogo.vue';
-import { STEP_LABELS } from '../model/flow';
+import { STEP_LABEL_KEYS } from '../model/flow';
 import type { Step } from '../model/flow';
 
-defineProps<{ step: Step; requiresApiKey: boolean }>();
+defineProps<{ step: Step; keyMode: KeyMode }>();
 
-const steps = Object.entries(STEP_LABELS) as [Step, string][];
+const { t } = useI18n();
+const steps = Object.entries(STEP_LABEL_KEYS) as [Step, string][];
 </script>
 
 <template>
@@ -16,7 +19,10 @@ const steps = Object.entries(STEP_LABELS) as [Step, string][];
             class="mx-auto flex max-w-[1360px] flex-wrap items-center justify-between gap-4 px-5 py-4 md:px-10"
         >
             <BrandLogo size="sm" />
-            <ol aria-label="Qadamlar" class="hidden gap-2 text-sm md:flex">
+            <ol
+                :aria-label="t('tryOn.steps.label')"
+                class="hidden gap-2 text-sm md:flex"
+            >
                 <li
                     v-for="[key, label] in steps"
                     :key="key"
@@ -28,10 +34,10 @@ const steps = Object.entries(STEP_LABELS) as [Step, string][];
                             : 'text-fog'
                     "
                 >
-                    {{ label }}
+                    {{ t(label) }}
                 </li>
             </ol>
-            <ApiKeyBadge :required="requiresApiKey" />
+            <ApiKeyBadge :mode="keyMode" />
         </div>
     </header>
 </template>

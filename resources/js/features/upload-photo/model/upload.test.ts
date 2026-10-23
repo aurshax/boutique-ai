@@ -13,12 +13,13 @@ describe('upload', () => {
         ).toEqual({ ok: true });
     });
 
-    it('rejects wrong type with human message from limits', () => {
+    it('rejects wrong type with an i18n key and the allowed formats', () => {
         const result = checkUpload({ type: 'image/gif', size: 100 }, limits);
         expect(result).toMatchObject({
             ok: false,
             reason: 'type',
-            message: 'Faqat JPEG, PNG yoki WebP rasm.',
+            messageKey: 'tryOn.photo.wrongType',
+            params: { formats: 'JPEG, PNG or WebP' },
         });
     });
 
@@ -30,7 +31,8 @@ describe('upload', () => {
         expect(result).toMatchObject({
             ok: false,
             reason: 'size',
-            message: 'Rasm 10 MB dan oshmasligi kerak.',
+            messageKey: 'tryOn.photo.tooLarge',
+            params: { mb: 10 },
         });
     });
 

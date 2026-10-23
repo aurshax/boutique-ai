@@ -14,7 +14,7 @@ import type {
 import { HttpError, requestJson } from '@/shared/api';
 import { POLL_INTERVAL_MS, useTryOnRequest } from './useTryOnRequest';
 
-// Tarmoq qatlami (shared/api) soxtalanadi — tryOnApi va polling haqiqiy.
+// Only the network layer (shared/api) is mocked — tryOnApi and polling are real.
 vi.mock('@/shared/api', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@/shared/api')>();
     return { ...actual, requestJson: vi.fn() };
@@ -29,6 +29,7 @@ const state = (
     status,
     error: null,
     result_url: null,
+    provider: 'mock',
     has_photo: true,
     suggested_size: '48',
     cost_usd: null,
@@ -121,7 +122,7 @@ describe('useTryOnRequest', () => {
 
         request.mockRejectedValueOnce(new HttpError(429, null));
         await api.submit(payload());
-        expect(api.generalError.value).toContain("ko'p");
+        expect(api.generalError.value).toBe('tryOn.errors.tooMany');
         scope.stop();
     });
 
@@ -133,7 +134,7 @@ describe('useTryOnRequest', () => {
         await api.remove();
         await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS * 3);
 
-        expect(request).toHaveBeenCalledTimes(2); // POST + DELETE, polling yo'q
+        expect(request).toHaveBeenCalledTimes(2); // POST + DELETE, no polling
         expect(request.mock.calls[1][1]).toMatchObject({ method: 'DELETE' });
         expect(api.current.value).toBeNull();
         scope.stop();

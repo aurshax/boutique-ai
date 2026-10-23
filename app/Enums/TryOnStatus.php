@@ -3,8 +3,8 @@
 namespace App\Enums;
 
 /**
- * Status mashinasi: queued → running → done | failed.
- * cancelled — mijoz kutishni to'xtatdi (OpenAI so'rovi baribir to'lanishi mumkin).
+ * Status machine: queued → running → done | failed.
+ * cancelled — the customer stopped waiting (the OpenAI call may still be billed).
  */
 enum TryOnStatus: string
 {

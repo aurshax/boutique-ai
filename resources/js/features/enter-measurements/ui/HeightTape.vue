@@ -1,10 +1,11 @@
 <script setup lang="ts">
 /**
- * Bo'y tanlash: santimetr lentasi. Sudrab o'zgartiriladi (1 sm = 8 px), +/− tugmalari va
- * klaviatura (← → PageUp PageDown Home End). role="slider" — ekran o'quvchilar uchun.
- * Qo'yib yuborilganda lenta "spring" bilan qadamga o'tiradi (CSS transition, overshoot).
+ * Height picker: a tailor's tape. Drag it (1 cm = 8 px), use the +/− buttons or the keyboard
+ * (← → PageUp PageDown Home End). role="slider" for screen readers.
+ * On release the tape springs onto the step (CSS transition with overshoot).
  */
 import { computed, ref, useId } from 'vue';
+import { useI18n } from '@/shared/i18n';
 
 const props = withDefaults(defineProps<{ min?: number; max?: number }>(), {
     min: 120,
@@ -12,6 +13,7 @@ const props = withDefaults(defineProps<{ min?: number; max?: number }>(), {
 });
 const model = defineModel<number>({ required: true });
 
+const { t } = useI18n();
 const PX_PER_CM = 8;
 const labelId = useId();
 const tapeId = useId();
@@ -67,11 +69,13 @@ function onKeydown(event: KeyboardEvent): void {
 <template>
     <div class="flex flex-col gap-3.5">
         <div class="flex items-center justify-between gap-3">
-            <span :id="labelId" class="text-base font-semibold">Bo'y</span>
+            <span :id="labelId" class="text-base font-semibold">{{
+                t('tryOn.height.label')
+            }}</span>
             <div class="flex items-center gap-2">
                 <button
                     type="button"
-                    aria-label="Bo'yni 1 sm kamaytirish"
+                    :aria-label="t('tryOn.height.decrease')"
                     class="size-11 rounded-full border border-line bg-white text-xl hover:border-ink"
                     @click="model = clamp(model - 1)"
                 >
@@ -80,11 +84,11 @@ function onKeydown(event: KeyboardEvent): void {
                 <output
                     :for="tapeId"
                     class="min-w-[120px] text-center font-mono text-[28px] font-medium tabular-nums"
-                    >{{ model }} sm</output
+                    >{{ t('tryOn.height.value', { cm: model }) }}</output
                 >
                 <button
                     type="button"
-                    aria-label="Bo'yni 1 sm oshirish"
+                    :aria-label="t('tryOn.height.increase')"
                     class="size-11 rounded-full border border-line bg-white text-xl hover:border-ink"
                     @click="model = clamp(model + 1)"
                 >
@@ -101,7 +105,7 @@ function onKeydown(event: KeyboardEvent): void {
             :aria-valuemin="min"
             :aria-valuemax="max"
             :aria-valuenow="model"
-            :aria-valuetext="`${model} santimetr`"
+            :aria-valuetext="t('tryOn.height.valueText', { cm: model })"
             class="relative h-12 cursor-grab touch-none overflow-hidden rounded-lg bg-chalk-soft select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink active:cursor-grabbing"
             @pointerdown="onPointerDown"
             @pointermove="onPointerMove"
@@ -109,7 +113,7 @@ function onKeydown(event: KeyboardEvent): void {
             @pointercancel="onPointerUp"
             @keydown="onKeydown"
         >
-            <!-- lenta: markaz chizig'i ostida joriy qiymat turadi -->
+            <!-- the tape: the current value sits under the centre line -->
             <div
                 class="absolute inset-y-0 left-1/2 text-ink"
                 :class="
@@ -138,13 +142,13 @@ function onKeydown(event: KeyboardEvent): void {
             />
         </div>
         <p class="text-xs text-slate">
-            Lentani suring yoki ← → tugmalaridan foydalaning.
+            {{ t('tryOn.height.hint') }}
         </p>
     </div>
 </template>
 
 <style scoped>
-/* 1 sm = 8 px: mayda chiziq har 8 px, katta (5 sm) har 40 px */
+/* 1 cm = 8 px: a small tick every 8 px, a large one (5 cm) every 40 px */
 .ruler {
     background-image:
         repeating-linear-gradient(

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * Bitta "kiyib ko'rish" so'rovi. OpenAI kaliti va mijozning shaxsiy ma'lumotlari bu yerda saqlanmaydi.
+ * One try-on request. The OpenAI key and the customer's personal data are never stored here.
  *
  * @property string $id
  * @property TryOnStatus $status

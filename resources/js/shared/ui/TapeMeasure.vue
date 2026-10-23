@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Santimetr lentasi: chapdan o'ngga "chiziladi", belgilar ketma-ket yonadi.
+// Tailor's tape: draws in from left to right, then the marks light up one by one.
 import { motion } from 'motion-v';
 
 withDefaults(defineProps<{ marks: (number | string)[]; unit?: string }>(), {

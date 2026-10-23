@@ -1,4 +1,4 @@
-// Public API — Home sahifasining bo'limlari.
+// Public API — the Home page sections.
 export { default as CallToAction } from './ui/CallToAction.vue';
 export { default as FabricShowcase } from './ui/FabricShowcase.vue';
 export { default as HowItWorks } from './ui/HowItWorks.vue';

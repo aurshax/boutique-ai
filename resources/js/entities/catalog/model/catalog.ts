@@ -1,8 +1,8 @@
-// Katalog bo'yicha qidiruv va narx — pure funksiyalar (Vue'siz, test qilinadi).
+// Catalogue lookups and pricing — pure functions (no Vue, unit tested).
 //
-// Tkan qoidasi (backend: Look::followsFabric bilan bir xil):
-//   - oddiy look ("separates") — tanlangan tkan faqat SHIMGA qo'llanadi;
-//   - kostyum (is_suit) — SHIM va BLAZERGA, ikkalasi bir matodan.
+// Fabric rule (same as the backend's Look::followsFabric):
+//   - separates — the chosen fabric applies to the TROUSERS only;
+//   - suit (is_suit) — to the TROUSERS and the BLAZER, both in one fabric.
 import type { Fabric, Look, Product, Style } from './types';
 
 export function findLook(styles: Style[], lookId: number): Look | null {
@@ -25,7 +25,7 @@ export function trousersOf(look: Look | null): Product | null {
     return look?.products.find((p) => p.type === 'trousers') ?? null;
 }
 
-/** Shu mahsulot look'da tanlangan tkanda tikiladimi? */
+/** Is this product made in the look's chosen fabric? */
 export function followsFabric(look: Look, product: Product): boolean {
     return (
         product.type === 'trousers' ||
@@ -34,8 +34,8 @@ export function followsFabric(look: Look, product: Product): boolean {
 }
 
 /**
- * Look uchun tanlash mumkin bo'lgan tkanlar. Kostyumda — shim VA blazer uchun mavjud bo'lganlari,
- * `extra_price_uzs` esa ikkalasining ustamasi yig'indisi (UI ko'rsatadigan narx farqi).
+ * Fabrics the look can be made in. For a suit — those available for both trousers AND blazer,
+ * with `extra_price_uzs` being the sum of both surcharges (the price difference the UI shows).
  */
 export function fabricsOf(look: Look | null): Fabric[] {
     if (!look) return [];
@@ -47,14 +47,14 @@ export function fabricsOf(look: Look | null): Fabric[] {
         let extra = 0;
         for (const product of targets) {
             const own = product.fabrics.find((f) => f.id === fabric.id);
-            if (!own) return []; // kostyumda blazer bu tkanda tikilmaydi — tanlovdan chiqadi
+            if (!own) return []; // the suit's blazer is not made in this fabric — drop it from the choice
             extra += own.extra_price_uzs;
         }
         return [{ ...fabric, extra_price_uzs: extra }];
     });
 }
 
-/** Look tanlanganda — narx qo'shmaydigan tkan, bo'lmasa birinchisi, tkan yo'q bo'lsa null. */
+/** On look change: the fabric with no surcharge, else the first one, null when there are none. */
 export function defaultFabricId(look: Look | null): number | null {
     const fabrics = fabricsOf(look);
     return (
@@ -70,7 +70,7 @@ export function findFabric(
     return fabricsOf(look).find((f) => f.id === fabricId) ?? null;
 }
 
-/** Bitta mahsulot narxi: tkanga bog'liq bo'lsa — shu mahsulotning o'z tkan ustamasi qo'shiladi. */
+/** One product's price: adds this product's own surcharge when it follows the fabric. */
 export function productPrice(
     look: Look,
     product: Product,
@@ -82,7 +82,7 @@ export function productPrice(
     return product.price_uzs + (own?.extra_price_uzs ?? 0);
 }
 
-/** Look umumiy narxi (so'm) — backend total_price_uzs (tkansiz) + tanlangan tkan ustamalari. */
+/** Look total (UZS) — the backend total_price_uzs (no fabric) plus the chosen fabric's surcharges. */
 export function lookTotal(look: Look | null, fabricId: number | null): number {
     if (!look) return 0;
     return look.products.reduce(
@@ -91,7 +91,7 @@ export function lookTotal(look: Look | null, fabricId: number | null): number {
     );
 }
 
-/** Look kartochkasidagi qisqa tavsif: birinchi 3 mahsulot nomi. */
+/** Short summary for the look card: the first 3 product names. */
 export function lookSummary(look: Look, limit = 3): string {
     return look.products
         .slice(0, limit)
@@ -99,17 +99,23 @@ export function lookSummary(look: Look, limit = 3): string {
         .join(' · ');
 }
 
-/** Tkan tanlovi sarlavhasi va izohi: kostyumda — pidjak va shim, aks holda — shim. */
+/** i18n keys for the fabric picker: for a suit it covers jacket and trousers, otherwise the trousers. */
 export function fabricScope(look: Look | null): {
-    label: string;
-    pieces: string;
+    labelKey: string;
+    piecesKey: string;
 } {
     return look?.is_suit
-        ? { label: 'Kostyum tkani', pieces: 'pidjak va shim' }
-        : { label: 'Shim tkani', pieces: 'shim' };
+        ? {
+              labelKey: 'tryOn.fabric.suit',
+              piecesKey: 'tryOn.fabric.piecesSuit',
+          }
+        : {
+              labelKey: 'tryOn.fabric.trousers',
+              piecesKey: 'tryOn.fabric.piecesTrousers',
+          };
 }
 
-/** Rasmi bor mahsulotlar — look kartochkasi va natija ekrani uchun. */
+/** Products that have an image — for the look card and the result screen. */
 export function productsWithImages(look: Look): Product[] {
     return look.products.filter((p) => p.image !== null);
 }

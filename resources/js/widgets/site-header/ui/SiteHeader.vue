@@ -1,16 +1,19 @@
 <script setup lang="ts">
-// Home header: hero ustida "suzadi" (absolute) — balandligi o'zgarsa ham hero tepasida bo'shliq qolmaydi.
+// Home header: floats over the hero (absolute), so no gap appears above the hero whatever its height.
 import { Link } from '@inertiajs/vue3';
 import { create as tryOn } from '@/routes/try-on';
+import { useI18n } from '@/shared/i18n';
 import BrandLogo from '@/shared/ui/BrandLogo.vue';
 import { Button } from '@/shared/ui/button';
 
-// Home sahifasidagi bo'limlar (widgets/home-sections) — id'lar shu ro'yxat bilan mos.
+const { t } = useI18n();
+
+// Home page sections (widgets/home-sections) — the ids must match this list.
 const links = [
-    { href: '#how', label: 'Qanday ishlaydi' },
-    { href: '#styles', label: 'Uslublar' },
-    { href: '#fabrics', label: 'Tkanlar' },
-    { href: '#trust', label: 'Xavfsizlik' },
+    { href: '#how', labelKey: 'nav.howItWorks' },
+    { href: '#styles', labelKey: 'nav.styles' },
+    { href: '#fabrics', labelKey: 'nav.fabrics' },
+    { href: '#trust', labelKey: 'nav.trust' },
 ];
 </script>
 
@@ -20,7 +23,7 @@ const links = [
     >
         <BrandLogo />
         <nav
-            aria-label="Asosiy menyu"
+            :aria-label="t('nav.main')"
             class="hidden gap-8 text-[15px] text-mist lg:flex"
         >
             <a
@@ -28,11 +31,11 @@ const links = [
                 :key="link.href"
                 :href="link.href"
                 class="hover:text-chalk"
-                >{{ link.label }}</a
+                >{{ t(link.labelKey) }}</a
             >
         </nav>
         <Button as-child variant="chalk" size="pill-sm">
-            <Link :href="tryOn()">Kiyinib ko'ring</Link>
+            <Link :href="tryOn()">{{ t('nav.tryOn') }}</Link>
         </Button>
     </header>
 </template>

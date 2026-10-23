@@ -3,8 +3,7 @@
 namespace App\Providers;
 
 use App\TryOn\Contracts\TryOnProvider;
-use App\TryOn\Providers\MockProvider;
-use App\TryOn\Providers\OpenAiProvider;
+use App\TryOn\ProviderFactory;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -13,7 +12,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use InvalidArgumentException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,12 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // TryOnProvider interfeysi → config('tryon.provider') bo'yicha implementatsiya.
-        $this->app->bind(TryOnProvider::class, fn (): TryOnProvider => match (config('tryon.provider')) {
-            'mock' => new MockProvider,
-            'openai' => new OpenAiProvider,
-            default => throw new InvalidArgumentException('Noma\'lum TRYON_PROVIDER: '.config('tryon.provider')),
-        });
+        // Default provider for code that does not know the customer's key (TryOnJob uses ProviderFactory directly).
+        $this->app->bind(TryOnProvider::class, fn (): TryOnProvider => $this->app->make(ProviderFactory::class)->make(null));
     }
 
     /**
@@ -40,8 +34,8 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Try-on so'rovlari cheklovi: bot yoki xato kod mijoz kalitidan ko'p pul yechmasligi uchun.
-     * Route'da: ->middleware('throttle:try-on')
+     * Try-on rate limits, so a bot or a buggy client cannot burn through a customer's key.
+     * Used on routes as ->middleware('throttle:try-on')
      */
     protected function configureRateLimits(): void
     {
@@ -50,7 +44,7 @@ class AppServiceProvider extends ServiceProvider
             Limit::perDay(100)->by('day:'.$request->ip()),
         ]);
 
-        // Status polling har 2 soniyada — 120/daqiqa yetarli.
+        // Status polling runs every 2 seconds — 120/minute is plenty.
         RateLimiter::for('try-on-status', fn (Request $request) => Limit::perMinute(120)->by($request->ip()));
     }
 

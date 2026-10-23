@@ -161,7 +161,8 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Public sign-up is off in production (AUTH_REGISTRATION=false): the site is a demo, not a SaaS.
+        ...(env('AUTH_REGISTRATION', true) ? [Features::registration()] : []),
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([

@@ -76,8 +76,10 @@ describe('fabric rules', () => {
     });
 
     it('names the fabric picker by scope', () => {
-        expect(fabricScope(navyKnit).label).toBe('Kostyum tkani');
-        expect(fabricScope(linenSummer).pieces).toBe('shim');
+        expect(fabricScope(navyKnit).labelKey).toBe('tryOn.fabric.suit');
+        expect(fabricScope(linenSummer).piecesKey).toBe(
+            'tryOn.fabric.piecesTrousers',
+        );
     });
 
     it('default fabric prefers no surcharge, falls back to the only one', () => {
@@ -119,7 +121,7 @@ describe('pricing', () => {
 describe('lookSummary', () => {
     it('joins first three product names', () => {
         expect(lookSummary(navyKnit)).toBe(
-            "Klassik shim, to'q ko'k · Blazer, to'q ko'k jun · Krem trikotaj polo",
+            'Classic navy trousers · Navy wool blazer · Cream knit polo',
         );
     });
 });

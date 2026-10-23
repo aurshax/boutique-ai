@@ -9,22 +9,22 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Mijoz rasmlarini muddati o'tgach o'chiradi va "osilib qolgan" so'rovlarni yopadi.
- * Scheduler har soatda ishga tushiradi (routes/console.php). Qo'lda: sail artisan try-on:prune
+ * Deletes customer photos after their TTL and closes requests that got stuck.
+ * The scheduler runs it hourly (routes/console.php). Manually: sail artisan try-on:prune
  */
 class PruneTryOnRequests extends Command
 {
     protected $signature = 'try-on:prune';
 
-    protected $description = 'Eski try-on rasmlarini o\'chirish va osilib qolgan so\'rovlarni yopish';
+    protected $description = 'Delete expired try-on images and close stuck requests';
 
     public function handle(ImageService $images): int
     {
         $uploadCutoff = now()->subHours((int) config('tryon.ttl.uploads_hours'));
         $resultCutoff = now()->subDays((int) config('tryon.ttl.results_days'));
 
-        // 1) Yuklangan rasmlar. Bitta rasmni bir nechta so'rov ishlatishi mumkin (tkan almashtirish),
-        //    shuning uchun rasm ENG OXIRGI so'rovdan hisoblab o'chiriladi: GROUP BY ... HAVING max(created_at) < cutoff
+        // 1) Uploaded photos. One photo can be shared by several requests (fabric swaps),
+        //    so it expires counting from the LATEST request: GROUP BY ... HAVING max(created_at) < cutoff
         $oldUploads = DB::table('try_on_requests')
             ->whereNotNull('upload_path')
             ->groupBy('upload_path')
@@ -36,25 +36,25 @@ class PruneTryOnRequests extends Command
             TryOnRequest::where('upload_path', $path)->update(['upload_path' => null]);
         }
 
-        // 2) Natija rasmlari
+        // 2) Result images
         $oldResults = TryOnRequest::whereNotNull('result_path')->where('created_at', '<', $resultCutoff)->get();
         foreach ($oldResults as $tryOn) {
             $images->delete($tryOn->result_path);
             $tryOn->update(['result_path' => null]);
         }
 
-        // 3) Osilib qolganlar: running > 10 daqiqa (job timeout 3 daqiqa) yoki queued > 30 daqiqa (worker ishlamayapti).
+        // 3) Stuck requests: running > 10 min (job timeout is 3 min) or queued > 30 min (no worker running).
         $stuck = TryOnRequest::query()
             ->where(fn ($q) => $q
                 ->where(fn ($q) => $q->where('status', TryOnStatus::Running->value)->where('updated_at', '<', now()->subMinutes(10)))
                 ->orWhere(fn ($q) => $q->where('status', TryOnStatus::Queued->value)->where('created_at', '<', now()->subMinutes(30))))
             ->update([
                 'status' => TryOnStatus::Failed->value,
-                'error' => 'Vaqt tugadi. Qaytadan urinib ko\'ring.',
+                'error' => __('tryon.errors.stuck'),
                 'finished_at' => now(),
             ]);
 
-        $this->info(sprintf('O\'chirildi: %d yuklangan rasm, %d natija. Yopildi: %d osilib qolgan so\'rov.',
+        $this->info(sprintf('Deleted: %d uploaded photo(s), %d result(s). Closed: %d stuck request(s).',
             $oldUploads->count(), $oldResults->count(), $stuck));
 
         return self::SUCCESS;

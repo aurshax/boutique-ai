@@ -18,11 +18,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+        // Behind a hosting load balancer / reverse proxy (Laravel Cloud, Caddy...): trust X-Forwarded-*
+        // so HTTPS URLs and client IPs (rate limits) are correct. Empty in local development.
+        if ($proxies = env('TRUSTED_PROXIES')) {
+            $middleware->trustProxies(at: $proxies === '*' ? '*' : explode(',', $proxies));
+        }
+
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            SecurityHeaders::class,   // CSP + xavfsizlik sarlavhalari (nonce @vite teglariga ham qo'yiladi)
+            SecurityHeaders::class,   // CSP + security headers (the nonce is also added to @vite tags)
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

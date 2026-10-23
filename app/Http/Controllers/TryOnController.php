@@ -13,11 +13,11 @@ use App\Models\Style;
 use App\Models\TryOnRequest;
 use App\TryOn\Exceptions\InvalidImageException;
 use App\TryOn\ImageService;
+use App\TryOn\ProviderFactory;
 use App\TryOn\SizeSuggester;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -28,8 +28,8 @@ class TryOnController extends Controller
 
     private const SESSION_LIMIT = 50;
 
-    /** Try-on sahifasi: katalog Inertia props sifatida. */
-    public function create(): InertiaResponse
+    /** Try-on page: the catalogue as Inertia props. */
+    public function create(ProviderFactory $providers): InertiaResponse
     {
         $styles = Style::with(['looks.products' => fn ($q) => $q->with('fabrics')])
             ->orderBy('sort')
@@ -51,7 +51,7 @@ class TryOnController extends Controller
                         'name' => $p->name,
                         'price_uzs' => $p->price_uzs,
                         'image' => $p->image ? '/'.$p->image : null,
-                        // Shim va blazer tkanlari (har birining o'z ustamasi bilan) — kostyumda ikkalasi kerak.
+                        // Trousers and blazer fabrics (each with its own surcharge) — a suit needs both.
                         'fabrics' => $p->type->supportsFabricSwap()
                             ? $p->fabrics->map(fn ($f) => [
                                 'id' => $f->id,
@@ -70,10 +70,10 @@ class TryOnController extends Controller
         return Inertia::render('try-on/TryOnPage', [
             'styles' => $styles,
             'sizes' => CreateTryOnRequest::SIZES,
-            'provider' => config('tryon.provider'),
-            'requiresApiKey' => config('tryon.provider') === 'openai',
+            // 'required' | 'optional' (demo: mock unless the visitor brings a key) | 'none'
+            'keyMode' => $providers->keyMode(),
             'estimateUsd' => config('tryon.estimate_usd'),
-            // Brauzerdagi oldindan tekshiruv uchun (features/upload-photo). Haqiqiy tekshiruv — CreateTryOnRequest.
+            // For the browser pre-check (features/upload-photo). The real check is CreateTryOnRequest.
             'upload' => [
                 'allowed_mimes' => config('tryon.upload.allowed_mimes'),
                 'max_kb' => (int) config('tryon.upload.max_kb'),
@@ -81,17 +81,18 @@ class TryOnController extends Controller
         ]);
     }
 
-    /** Yangi so'rov: rasmni tozalaydi, saqlaydi, job'ni navbatga qo'yadi. 202 Accepted. */
-    public function store(CreateTryOnRequest $request, ImageService $images, SizeSuggester $sizes): JsonResponse
+    /** New request: sanitises and stores the photo, queues the job. 202 Accepted. */
+    public function store(CreateTryOnRequest $request, ImageService $images, SizeSuggester $sizes, ProviderFactory $providers): JsonResponse
     {
         $data = $request->validated();
+        $apiKey = $request->attributes->get(ExtractOpenAiKey::ATTRIBUTE);
         $look = Look::with('products')->findOrFail($data['look_id']);
 
         $sourceId = $data['source_request_id'] ?? null;
         if ($sourceId !== null) {
             $source = $this->owned($request, $sourceId);
-            if ($source->upload_path === null || ! Storage::disk('local')->exists($source->upload_path)) {
-                throw ValidationException::withMessages(['photo' => 'Oldingi rasm o\'chirilgan. Rasmni qayta yuklang.']);
+            if (! $images->exists($source->upload_path)) {
+                throw ValidationException::withMessages(['photo' => __('tryon.validation.source_photo_deleted')]);
             }
             $uploadPath = $source->upload_path;
         } else {
@@ -121,32 +122,32 @@ class TryOnController extends Controller
                 'source_request_id' => $sourceId,
             ],
             'prompt_version' => (string) config('tryon.prompt_version'),
-            'provider' => (string) config('tryon.provider'),
+            'provider' => $providers->nameFor($apiKey),
             'upload_path' => $uploadPath,
         ]);
 
         $this->remember($request, $tryOn->id);
 
-        TryOnJob::dispatch($tryOn->id, $request->attributes->get(ExtractOpenAiKey::ATTRIBUTE));
+        TryOnJob::dispatch($tryOn->id, $apiKey);
 
         return response()->json($this->present($tryOn), 202);
     }
 
-    /** Polling: holat va tayyor bo'lsa — 10 daqiqalik vaqtinchalik havola. */
+    /** Polling: status, plus a 10-minute signed link once the result is ready. */
     public function show(Request $request, string $id): JsonResponse
     {
         return response()->json($this->present($this->owned($request, $id)));
     }
 
     /**
-     * "Rasmimni o'chir" / "Kutishni to'xtatish".
-     * Rasmlar darhol o'chiriladi. Ishlayotgan bo'lsa — cancelled (OpenAI so'rovi baribir to'lanishi mumkin).
+     * "Delete my photo" / "Stop waiting".
+     * Images are deleted at once. A running request becomes cancelled (the OpenAI call may still be billed).
      */
     public function destroy(Request $request, string $id, ImageService $images): Response
     {
         $tryOn = $this->owned($request, $id);
 
-        // Shu rasmni boshqa so'rovlar (tkan almashtirish) ham ishlatgan bo'lishi mumkin — hammasidan uzamiz.
+        // Other requests (fabric swaps) may reuse this photo — detach it from all of them.
         if ($tryOn->upload_path !== null) {
             $images->delete($tryOn->upload_path);
             TryOnRequest::where('upload_path', $tryOn->upload_path)->update(['upload_path' => null]);
@@ -163,7 +164,7 @@ class TryOnController extends Controller
         return response()->noContent();
     }
 
-    /** Faqat shu brauzer sessiyasida yaratilgan so'rovlar. Boshqasiniki — 404 (bor-yo'qligini ham bildirmaymiz). */
+    /** Only requests created in this browser session. Anyone else's is a 404 (we do not even reveal it exists). */
     private function owned(Request $request, string $id): TryOnRequest
     {
         $ids = (array) $request->session()->get(self::SESSION_KEY, []);
@@ -184,12 +185,13 @@ class TryOnController extends Controller
     {
         $resultUrl = null;
         if ($tryOn->status === TryOnStatus::Done && $tryOn->result_path !== null) {
-            $resultUrl = Storage::disk('local')->temporaryUrl($tryOn->result_path, now()->addMinutes(10));
+            $resultUrl = app(ImageService::class)->temporaryUrl($tryOn->result_path);
         }
 
         return [
             'id' => $tryOn->id,
             'status' => $tryOn->status->value,
+            'provider' => $tryOn->provider,   // 'mock' results are labelled as a demo in the UI
             'error' => $tryOn->error,
             'result_url' => $resultUrl,
             'has_photo' => $tryOn->upload_path !== null,

@@ -1,13 +1,15 @@
 <script setup lang="ts">
-// Shim tkanlari (radiogroup). Namuna ko'rinishi — entities/catalog swatchStyle().
+// Fabric picker (radiogroup). Swatch look comes from entities/catalog swatchStyle().
 import { computed, useId } from 'vue';
 import { swatchStyle } from '@/entities/catalog';
 import type { Fabric } from '@/entities/catalog';
+import { useI18n } from '@/shared/i18n';
 import { formatShortSurcharge, formatUzs } from '@/shared/lib/format';
 
 const props = defineProps<{ fabrics: Fabric[]; label?: string }>();
 const model = defineModel<number | null>({ required: true });
 
+const { t } = useI18n();
 const labelId = useId();
 const selected = computed(
     () => props.fabrics.find((f) => f.id === model.value) ?? null,
@@ -18,14 +20,16 @@ const selected = computed(
     <div class="flex flex-col gap-3.5">
         <div class="flex flex-wrap justify-between gap-3">
             <span :id="labelId" class="text-base font-semibold">{{
-                label ?? 'Shim tkani'
+                label ?? t('tryOn.fabric.trousers')
             }}</span>
             <span v-if="selected" class="text-sm text-slate">
                 {{ selected.name }} ·
                 {{
                     selected.extra_price_uzs
-                        ? `+${formatUzs(selected.extra_price_uzs)} so'm`
-                        : "narx o'zgarmaydi"
+                        ? t('tryOn.fabric.surcharge', {
+                              amount: formatUzs(selected.extra_price_uzs),
+                          })
+                        : t('tryOn.fabric.noSurcharge')
                 }}
             </span>
         </div>

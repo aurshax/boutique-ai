@@ -6,8 +6,8 @@ use App\Models\Product;
 use App\Models\SizeChart;
 
 /**
- * Bo'y, bel va mijoz aytgan odatdagi razmer bo'yicha katalogdan razmer taklif qiladi.
- * Postgres: WHERE height_cm @> :h AND waist_cm @> :w  (GiST indeks bilan).
+ * Suggests a size from the catalogue by height, waist and the customer's usual size.
+ * Postgres: WHERE height_cm @> :h AND waist_cm @> :w  (GiST index).
  */
 class SizeSuggester
 {
@@ -22,7 +22,7 @@ class SizeSuggester
         $sizes = $query->orderBy('id')->pluck('size');
 
         if ($sizes->isEmpty()) {
-            // Bo'y jadvaldan tashqarida — mijoz aytgan razmer katalogda bo'lsa, shuni qaytaramiz.
+            // Height is outside the chart — fall back to the customer's usual size if the catalogue has it.
             $exists = $usualSize !== null
                 && SizeChart::where('product_id', $product->id)->where('size', $usualSize)->exists();
 
@@ -33,7 +33,7 @@ class SizeSuggester
             return $usualSize;
         }
 
-        // Bir nechta mos keldi: bel ma'lum bo'lsa birinchisi, aks holda o'rtadagisi.
+        // Several sizes fit: take the first when the waist is known, otherwise the middle one.
         return $waistCm !== null
             ? $sizes->first()
             : $sizes->get(intdiv($sizes->count(), 2));

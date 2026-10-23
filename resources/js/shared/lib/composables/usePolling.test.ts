@@ -41,10 +41,10 @@ describe('usePolling', () => {
         });
 
         polling.start();
-        polling.start(); // masalan: qayta submit
+        polling.start(); // e.g. a re-submit
         await vi.advanceTimersByTimeAsync(3000);
 
-        expect(task).toHaveBeenCalledTimes(3); // 2 ta parallel tsikl bo'lsa 6 bo'lardi
+        expect(task).toHaveBeenCalledTimes(3); // two parallel loops would make it 6
         polling.stop();
     });
 

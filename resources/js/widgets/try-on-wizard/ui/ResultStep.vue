@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// 3-qadam: oldin/keyin, look tarkibi va narxi, taxminiy razmer, tkanni almashtirish, yuklab olish.
+// Step 3: before/after, look items and price, suggested size, fabric swap, download.
 import { motion } from 'motion-v';
 import { computed } from 'vue';
 import {
@@ -9,11 +9,13 @@ import {
     productPrice,
 } from '@/entities/catalog';
 import { FabricSwatches } from '@/features/select-fabric';
+import { useI18n } from '@/shared/i18n';
 import { formatUsd, formatUzs } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
 import { injectTryOnFlow } from '../model/useTryOnFlow';
 import BeforeAfter from './BeforeAfter.vue';
 
+const { t } = useI18n();
 const flow = injectTryOnFlow();
 const { form, current, swapFabricId, submitting, keyReady, estimate } = flow;
 const { photoUrl, look, style, fabric, fabrics, total, heightCm, waistCm } =
@@ -21,17 +23,26 @@ const { photoUrl, look, style, fabric, fabrics, total, heightCm, waistCm } =
 
 const canSwap = computed(() => swapFabricId.value !== form.fabricId.value);
 const scope = computed(() => fabricScope(look.value));
-const measurements = computed(
-    () =>
-        `bo'y ${heightCm.value} sm${waistCm.value ? ` · bel ${waistCm.value} sm` : ''}`,
+const measurements = computed(() =>
+    waistCm.value
+        ? t('tryOn.result.measurementsWaist', {
+              height: heightCm.value,
+              waist: waistCm.value,
+          })
+        : t('tryOn.result.measurements', { height: heightCm.value }),
 );
+/** The demo (mock) provider produced this result — say so instead of pretending it is real AI. */
+const isDemoResult = computed(() => current.value?.provider === 'mock');
 </script>
 
 <template>
     <div
         class="mx-auto flex max-w-[1360px] flex-wrap items-start gap-8 px-5 py-8 md:px-10"
     >
-        <section aria-label="Natija" class="min-w-0 flex-[999_1_560px]">
+        <section
+            :aria-label="t('tryOn.result.label')"
+            class="min-w-0 flex-[999_1_560px]"
+        >
             <BeforeAfter
                 v-if="current?.result_url"
                 :before="photoUrl"
@@ -84,26 +95,39 @@ const measurements = computed(
                     </motion.li>
                 </ul>
                 <div class="flex items-baseline justify-between gap-3">
-                    <span class="text-[15px] text-slate">Look narxi</span>
-                    <span class="font-mono text-2xl font-medium"
-                        >{{ formatUzs(total) }} so'm</span
-                    >
+                    <span class="text-[15px] text-slate">{{
+                        t('tryOn.result.lookTotal')
+                    }}</span>
+                    <span class="font-mono text-2xl font-medium">{{
+                        t('common.uzs', { amount: formatUzs(total) })
+                    }}</span>
                 </div>
                 <div
                     v-if="current?.suggested_size"
                     class="flex items-center justify-between gap-3 rounded-2xl bg-chalk-soft px-4 py-3.5"
                 >
                     <span class="text-sm text-[#3D3013]"
-                        >Taxminiy razmer<br /><span class="text-xs">{{
-                            measurements
-                        }}</span></span
+                        >{{ t('tryOn.result.suggestedSize') }}<br /><span
+                            class="text-xs"
+                            >{{ measurements }}</span
+                        ></span
                     >
                     <span class="font-mono text-3xl font-medium">{{
                         current.suggested_size
                     }}</span>
                 </div>
-                <p v-if="current?.cost_usd" class="text-xs text-slate">
-                    Sarflandi: {{ formatUsd(Number(current.cost_usd), 4) }}
+                <p
+                    v-if="isDemoResult"
+                    class="rounded-2xl bg-paper px-4 py-3 text-sm text-slate"
+                >
+                    {{ t('tryOn.result.demoNote') }}
+                </p>
+                <p v-else-if="current?.cost_usd" class="text-xs text-slate">
+                    {{
+                        t('tryOn.result.spent', {
+                            cost: formatUsd(Number(current.cost_usd), 4),
+                        })
+                    }}
                 </p>
             </div>
 
@@ -114,7 +138,11 @@ const measurements = computed(
                 <FabricSwatches
                     v-model="swapFabricId"
                     :fabrics="fabrics"
-                    :label="`${scope.label}: boshqasida ko'rish`"
+                    :label="
+                        t('tryOn.result.swapTitle', {
+                            label: t(scope.labelKey),
+                        })
+                    "
                 />
                 <Button
                     v-if="canSwap"
@@ -123,11 +151,14 @@ const measurements = computed(
                     :disabled="submitting || !keyReady"
                     @click="flow.swapFabric"
                 >
-                    Shu tkanda ko'rish · ≈ {{ estimate }}
+                    {{ t('tryOn.result.swapButton', { estimate }) }}
                 </Button>
                 <p v-else class="text-sm text-slate">
-                    Rasm qayta yuklanmaydi — faqat {{ scope.pieces }} yangi
-                    tkanda tikiladi.
+                    {{
+                        t('tryOn.result.swapNote', {
+                            pieces: t(scope.piecesKey),
+                        })
+                    }}
                 </p>
             </div>
 
@@ -141,8 +172,8 @@ const measurements = computed(
                 >
                     <a
                         :href="current.result_url"
-                        download="boutique-ai-natija.png"
-                        >Yuklab olish</a
+                        download="boutique-ai-result.jpg"
+                        >{{ t('tryOn.result.download') }}</a
                     >
                 </Button>
                 <Button
@@ -150,7 +181,7 @@ const measurements = computed(
                     size="pill"
                     class="flex-[1_1_140px]"
                     @click="flow.editLook"
-                    >Boshqa look</Button
+                    >{{ t('tryOn.result.anotherLook') }}</Button
                 >
             </div>
             <button
@@ -158,7 +189,7 @@ const measurements = computed(
                 class="self-start py-1.5 text-sm text-[#A23C2C] underline"
                 @click="flow.discardPhoto"
             >
-                Rasmimni hozir o'chirish
+                {{ t('tryOn.result.deletePhoto') }}
             </button>
         </aside>
     </div>

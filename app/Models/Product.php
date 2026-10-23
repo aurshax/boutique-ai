@@ -12,13 +12,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * Katalog mahsuloti: shim, ko'ylak, blazer, kamar, galstuk, poyabzal.
+ * Catalogue product: trousers, shirt, blazer, belt, tie, shoes.
  *
  * @property int $id
  * @property string $slug
  * @property ProductType $type
  * @property string $name
- * @property string|null $description
+ * @property string|null $description  English visual description (image generation and try-on prompt)
  * @property int $price_uzs
  * @property string|null $image
  * @property int|null $default_fabric_id
@@ -44,7 +44,7 @@ class Product extends Model
         return $this->belongsTo(Fabric::class, 'default_fabric_id');
     }
 
-    /** Shu mahsulotni tikish mumkin bo'lgan tkanlar. @return BelongsToMany<Fabric, $this> */
+    /** Fabrics this product can be made in. @return BelongsToMany<Fabric, $this> */
     public function fabrics(): BelongsToMany
     {
         return $this->belongsToMany(Fabric::class, 'product_fabric')->withPivot('extra_price_uzs');

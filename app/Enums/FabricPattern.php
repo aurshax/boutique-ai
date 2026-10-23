@@ -13,14 +13,7 @@ enum FabricPattern: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Plain => 'Silliq',
-            self::Pinstripe => "Ingichka chiziq (pinstripe)",
-            self::Check => 'Katak',
-            self::Herringbone => 'Archa (herringbone)',
-            self::Birdseye => "Qush ko'zi (birdseye)",
-            self::Tweed => 'Tvid',
-        };
+        return __("catalog.patterns.{$this->value}");
     }
 
     /** @return list<string> */
