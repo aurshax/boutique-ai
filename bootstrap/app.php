@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountPagesEnabled;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
@@ -23,6 +24,12 @@ return Application::configure(basePath: dirname(__DIR__))
         if ($proxies = env('TRUSTED_PROXIES')) {
             $middleware->trustProxies(at: $proxies === '*' ? '*' : explode(',', $proxies));
         }
+
+        // Account pages off → 404 before `auth` can redirect a guest to the (hidden) login page.
+        $middleware->prependToPriorityList(
+            before: \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            prepend: EnsureAccountPagesEnabled::class,
+        );
 
         $middleware->web(append: [
             HandleAppearance::class,

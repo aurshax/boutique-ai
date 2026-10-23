@@ -13,6 +13,7 @@ Use `.env.production.example` as the template. Most hosts (Laravel Cloud, Forge)
 | `DB_*` | Sail PostgreSQL | Managed PostgreSQL, `DB_SSLMODE=require` |
 | `SESSION_ENCRYPT`, `SESSION_SECURE_COOKIE` | `false` | `true` |
 | `TRUSTED_PROXIES` | — | `*` behind the platform's load balancer (correct HTTPS URLs and client IPs for rate limits) |
+| `AUTH_ENABLED` | `true` | `false` — every account page (login, sign-up, password reset, 2FA, passkeys, dashboard, settings) returns 404 |
 | `AUTH_REGISTRATION` | `true` | `false` — no sign-ups on the demo |
 | Seeded admin | created | not created (`app()->isProduction()`) |
 | `TRYON_PROVIDER` | `mock` / `openai` | `auto` |
@@ -54,7 +55,7 @@ php artisan db:seed --class=CatalogSeeder --force
 
 - [ ] PHP is patched: **8.5.12+ / 8.4.27+ / 8.3.36+** (PHP2Shell, CVE-2026-109618 / CVE-2026-109619). Check with `php -v`
 - [ ] `APP_DEBUG=false` and `APP_KEY` is set
-- [ ] `AUTH_REGISTRATION=false`, and there is no test admin in the database
+- [ ] `AUTH_ENABLED=false` (`/login` returns 404), `AUTH_REGISTRATION=false`, and there is no test admin in the database
 - [ ] `TRYON_PROVIDER=auto`, and a visit without a key returns a labelled mock result
 - [ ] Uploads land in the private bucket, and their URLs are signed and expire
 - [ ] The queue worker and the scheduler are running

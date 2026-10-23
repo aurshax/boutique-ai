@@ -101,7 +101,8 @@ return [
     |
     */
 
-    'middleware' => ['web'],
+    // EnsureAccountPagesEnabled: every Fortify route (login, reset, 2FA, passkeys) is a 404 when AUTH_ENABLED=false.
+    'middleware' => ['web', \App\Http\Middleware\EnsureAccountPagesEnabled::class],
 
     /*
     |--------------------------------------------------------------------------

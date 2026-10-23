@@ -114,4 +114,18 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Account pages (starter kit)
+    |--------------------------------------------------------------------------
+    |
+    | The try-on itself needs no account. When false, every account route (login,
+    | registration, password reset, two-factor, passkeys, dashboard, settings)
+    | returns 404 via EnsureAccountPagesEnabled. Off on the public demo.
+    | The routes stay registered so Wayfinder still generates their TS helpers.
+    |
+    */
+
+    'enabled' => (bool) env('AUTH_ENABLED', true),
+
 ];

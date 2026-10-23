@@ -4,7 +4,11 @@ import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
+import { spawnSync } from 'node:child_process';
 import { defineConfig, lazyPlugins } from 'vite-plus';
+
+// Wayfinder runs `artisan`. The host Mac has no PHP, so it goes through Sail; CI and servers have PHP.
+const hasPhp = spawnSync('php', ['-v']).status === 0;
 
 export default defineConfig({
     plugins: lazyPlugins(() => [
@@ -40,8 +44,9 @@ export default defineConfig({
             : [
                   wayfinder({
                       formVariants: true,
-                      // No PHP on the host Mac: run wayfinder inside the Sail container
-                      command: './vendor/bin/sail artisan wayfinder:generate',
+                      command: hasPhp
+                          ? 'php artisan wayfinder:generate'
+                          : './vendor/bin/sail artisan wayfinder:generate',
                   }),
               ]),
     ]),
