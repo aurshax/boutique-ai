@@ -43,5 +43,8 @@ yarn-error.log
 /opencode.json
 /opencode.jsonc
 
-# katta original media fayllar (web versiyalari public/media ichida)
+# large original media files (the web versions live in public/media)
 /public/media/_originals
+
+# private working notes (Uzbek), not part of the public repo
+/notes

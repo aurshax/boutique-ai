@@ -16,10 +16,10 @@ describe('HttpError', () => {
     it('exposes Laravel validation errors for 422', () => {
         const error = new HttpError(422, {
             message: 'x',
-            errors: { photo: ['Rasm yuklang.'] },
+            errors: { photo: ['Upload a photo.'] },
         });
         expect(error.isValidation).toBe(true);
-        expect(error.validationErrors).toEqual({ photo: ['Rasm yuklang.'] });
+        expect(error.validationErrors).toEqual({ photo: ['Upload a photo.'] });
     });
 
     it('returns empty errors for other statuses or empty body', () => {

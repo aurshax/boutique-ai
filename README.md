@@ -75,9 +75,13 @@ npx vp check
 
 ## Deployment
 
-See `.env.production.example` and `docs/DEPLOY.md`: an S3-compatible private bucket for photos, a queue worker and the scheduler (`try-on:prune`), `AUTH_REGISTRATION=false` and `TRUSTED_PROXIES`.
+See [`docs/DEPLOY.md`](docs/DEPLOY.md) and `.env.production.example`: an S3-compatible private bucket for photos, a queue worker and the scheduler (`try-on:prune`), `AUTH_REGISTRATION=false` and `TRUSTED_PROXIES`.
 
-> Project docs in `docs/` are written in Uzbek; code and comments are in English.
+## Docs
+
+- [Architecture](docs/ARCHITECTURE.md) — request flow, data model, provider modes, frontend layers, security
+- [Development](docs/DEVELOPMENT.md) — local setup, commands, troubleshooting
+- [Deployment](docs/DEPLOY.md) — production settings and checklist
 
 ## Credits and licence
 

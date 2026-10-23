@@ -18,7 +18,7 @@ export default defineConfig({
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
                 }),
-                // boutique-ai brand fonts (docs/ARCHITECTURE.md, design)
+                // boutique-ai brand fonts (docs/ARCHITECTURE.md → Design tokens)
                 bunny('Bodoni Moda', { weights: [500, 600] }),
                 bunny('Figtree', { weights: [400, 500, 600, 700] }),
                 bunny('JetBrains Mono', { weights: [400, 500] }),
@@ -47,7 +47,7 @@ export default defineConfig({
     ]),
     server: {
         // IPv4 address: Node resolves "localhost" to [::1], and the CSP cannot allow-list an IPv6
-        // host → scripts get blocked (docs/SETUP.md, "Ma'lum xatolar").
+        // host → scripts get blocked (docs/DEVELOPMENT.md → Troubleshooting).
         host: '127.0.0.1',
         watch: {
             ignored: [

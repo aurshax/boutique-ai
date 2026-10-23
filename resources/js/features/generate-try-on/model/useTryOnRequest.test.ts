@@ -113,12 +113,12 @@ describe('useTryOnRequest', () => {
 
     it('maps 422 to field errors and 429 to a general message', async () => {
         request.mockRejectedValueOnce(
-            new HttpError(422, { errors: { photo: ['Rasm yuklang.'] } }),
+            new HttpError(422, { errors: { photo: ['Upload a photo.'] } }),
         );
         const { api, scope } = setup();
 
         expect(await api.submit(payload())).toBe(false);
-        expect(api.errors.value.photo).toEqual(['Rasm yuklang.']);
+        expect(api.errors.value.photo).toEqual(['Upload a photo.']);
 
         request.mockRejectedValueOnce(new HttpError(429, null));
         await api.submit(payload());

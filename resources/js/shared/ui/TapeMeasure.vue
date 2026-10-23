@@ -43,7 +43,7 @@ withDefaults(defineProps<{ marks: (number | string)[]; unit?: string }>(), {
 </template>
 
 <style scoped>
-/* Santimetr lentasi: mayda chiziq har 12px, katta chiziq har 60px */
+/* Centimetre tape: a small tick every 12px, a large one every 60px */
 .tape-measure {
     background-image:
         repeating-linear-gradient(
