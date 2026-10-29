@@ -1,5 +1,7 @@
 // English UI messages (default locale). Add another locale as a file with the same shape
 // (`satisfies MessageSchema` in its file makes the compiler check every key).
+import { BRAND_NAME } from '@/shared/config/brand';
+
 export const en = {
     common: {
         uzs: '{amount} UZS',
@@ -72,7 +74,7 @@ export const en = {
         },
         cta: { title: 'The mirror is ready. Your turn.' },
         footer: {
-            copyright: '© 2026 Boutique·AI — demo project',
+            copyright: `© 2026 ${BRAND_NAME} — demo project`,
             credits:
                 'Photos: Unsplash · Video: Pexels · Catalogue: AI-generated',
         },
@@ -191,9 +193,10 @@ export const en = {
         compare: {
             before: 'Before',
             after: 'After',
-            beforeAlt: 'Before: your photo',
             afterAlt: 'After: the selected look',
-            slider: 'Compare',
+            slider: 'Compare your photo with the result',
+            position: '{before}% before, {after}% after',
+            loading: 'Loading the result…',
             disclaimer:
                 'AI image. Real colour and pattern may differ slightly — check the fabric sample in the shop.',
         },

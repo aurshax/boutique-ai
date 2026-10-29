@@ -19,6 +19,10 @@ These files are **not** covered by the project's MIT licence.
 | fabrics/fabric-navy-check-grey-twill.webp       | Victor Volkov    | https://unsplash.com/photos/a-close-up-of-a-blue-and-grey-fabric-kwpJY3RbObo                                                              |
 | fabrics/fabric-camel-houndstooth-brown.webp     | Victor Volkov    | https://unsplash.com/photos/a-close-up-of-a-brown-and-black-fabric-t3mSDMjd9ZY                                                            |
 
+## README screenshots
+
+`docs/screenshots/` shows a real try-on of the Unsplash photo by Mohamad Khosravi (https://unsplash.com/photos/man-in-black-suit-jacket-and-black-pants-standing-on-gray-concrete-floor-during-daytime-vS0Kya7E5V4). The "after" images are AI edits of that photo made with the OpenAI Images API.
+
 ## AI-generated (demo catalogue)
 
 `catalog/*.webp` and `fabrics/swatch-*.webp` were generated for this project with the OpenAI Images API (`sail artisan catalog:generate-images`); no third-party copyright applies. They are demo content only — a real shop would replace them with its own product photography.

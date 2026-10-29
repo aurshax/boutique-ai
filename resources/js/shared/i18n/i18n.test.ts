@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { i18n } from './index';
 import { en } from './locales/en';
+import { BRAND_NAME } from '@/shared/config/brand';
 
 /** Every leaf key path in the locale object, e.g. "home.how.steps.0.title". */
 function leafKeys(node: unknown, prefix = ''): string[] {
@@ -26,5 +27,11 @@ describe('i18n', () => {
         expect(t('common.uzs', { amount: '4,357,000' })).toBe('4,357,000 UZS');
         expect(t('home.styles.looks', 1)).toBe('1 look');
         expect(t('home.styles.looks', 3)).toBe('3 looks');
+    });
+
+    it('names the brand from shared/config/brand, never the old working title', () => {
+        expect(t('home.footer.copyright')).toContain(BRAND_NAME);
+        for (const key of keys)
+            expect(t(key, { count: 2 }, 2), key).not.toMatch(/boutique/i);
     });
 });

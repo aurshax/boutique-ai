@@ -9,6 +9,7 @@ import {
     productPrice,
 } from '@/entities/catalog';
 import { FabricSwatches } from '@/features/select-fabric';
+import { BRAND_SLUG } from '@/shared/config/brand';
 import { useI18n } from '@/shared/i18n';
 import { formatUsd, formatUzs } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
@@ -172,7 +173,7 @@ const isDemoResult = computed(() => current.value?.provider === 'mock');
                 >
                     <a
                         :href="current.result_url"
-                        download="boutique-ai-result.jpg"
+                        :download="`${BRAND_SLUG}-result.jpg`"
                         >{{ t('tryOn.result.download') }}</a
                     >
                 </Button>

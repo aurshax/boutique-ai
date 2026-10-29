@@ -4,6 +4,14 @@ See a suit on yourself before you buy it. A visitor uploads a full-length photo,
 
 Built as a portfolio project for menswear boutiques: the catalogue, prices and fabrics come from the shop's own data, and the AI only does the fitting.
 
+![Try-on flow: choose a look, wait for the AI, compare before and after, swap the fabric](docs/screenshots/05-try-on-flow.gif)
+
+| Choose a look and fabric                              | Result with size and price                | Same photo, another fabric                          |
+| ----------------------------------------------------- | ----------------------------------------- | --------------------------------------------------- |
+| ![Choose a look](docs/screenshots/02-choose-look.jpg) | ![Result](docs/screenshots/03-result.jpg) | ![Fabric swap](docs/screenshots/04-fabric-swap.jpg) |
+
+Screenshots are from a real run with the OpenAI Images API (about $0.07 per image). The model photo is from Unsplash, see [credits](public/media/CREDITS.md).
+
 ## Highlights
 
 - **AI try-on** via the OpenAI Images API (`/v1/images/edits`): the customer photo plus catalogue product images go in as references. The output keeps the input aspect ratio, and the prompt locks face, pose and framing.

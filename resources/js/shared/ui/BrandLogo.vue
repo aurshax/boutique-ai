@@ -1,7 +1,9 @@
 <script setup lang="ts">
-// The brand name lives in one place. Renaming ("Boutique·AI" is a working title) only touches this file.
+// Site logo: the Fitzaro mark + wordmark, as in the plugin banner. The name comes from shared/config/brand.
 import { Link } from '@inertiajs/vue3';
 import { home } from '@/routes';
+import { BRAND_NAME } from '@/shared/config/brand';
+import BrandMark from '@/shared/ui/BrandMark.vue';
 
 withDefaults(defineProps<{ size?: 'sm' | 'md' }>(), { size: 'md' });
 </script>
@@ -9,9 +11,13 @@ withDefaults(defineProps<{ size?: 'sm' | 'md' }>(), { size: 'md' });
 <template>
     <Link
         :href="home()"
-        class="font-display font-semibold tracking-[0.01em] text-[#EDEFF3]"
+        class="inline-flex items-center gap-2 font-sans font-bold tracking-[-0.01em] text-[#EDEFF3]"
         :class="size === 'sm' ? 'text-[22px]' : 'text-[22px] md:text-[26px]'"
     >
-        Boutique<span class="text-chalk">·</span>AI
+        <BrandMark
+            class="shrink-0"
+            :class="size === 'sm' ? 'size-8' : 'size-8 md:size-9'"
+        />
+        {{ BRAND_NAME }}
     </Link>
 </template>
