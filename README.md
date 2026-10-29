@@ -1,8 +1,8 @@
-# Boutique·AI — virtual suit fitting
+# Fitzaro Front — AI virtual try-on web app
 
-See a suit on yourself before you buy it. A visitor uploads a full-length photo, enters their height and usual size, picks a look (trousers, shirt or blazer, accessories) and a fabric — and gets a photo of themselves wearing it, plus a suggested size and the total price.
+Shoppers see clothes on their own photo before they buy. This is the web app and live demo of **Fitzaro**, the AI virtual try-on that also ships as a WooCommerce plugin ([aurshax/fitzaro](https://github.com/aurshax/fitzaro)). New try-on features are built and tested here in a full web app first, then ported to WordPress.
 
-Built as a portfolio project for menswear boutiques: the catalogue, prices and fabrics come from the shop's own data, and the AI only does the fitting.
+The demo today is the **Tailoring** module for menswear shops: a visitor uploads a full-length photo, enters their height and usual size, picks a look (trousers, shirt or blazer, accessories) and a fabric, and gets a photo of themselves wearing it, plus a suggested size and the total price. The catalogue, prices and fabrics come from the shop's own data; the AI only does the fitting.
 
 ![Try-on flow: choose a look, wait for the AI, compare before and after, swap the fabric](docs/screenshots/05-try-on-flow.gif)
 
@@ -10,7 +10,7 @@ Built as a portfolio project for menswear boutiques: the catalogue, prices and f
 | ----------------------------------------------------- | ----------------------------------------- | --------------------------------------------------- |
 | ![Choose a look](docs/screenshots/02-choose-look.jpg) | ![Result](docs/screenshots/03-result.jpg) | ![Fabric swap](docs/screenshots/04-fabric-swap.jpg) |
 
-Screenshots are from a real run with the OpenAI Images API (about $0.07 per image). The model photo is from Unsplash, see [credits](public/media/CREDITS.md).
+Screenshots are from a real run with the OpenAI Images API (about $0.07 per image). The model photo is from Unsplash, see [credits](public/media/CREDITS.md). To retake them: `scripts/capture-screenshots.mjs` (see [Development](docs/DEVELOPMENT.md)).
 
 ## Highlights
 
@@ -20,6 +20,16 @@ Screenshots are from a real run with the OpenAI Images API (about $0.07 per imag
 - **Bring your own key, public demo mode.** `TRYON_PROVIDER=auto`: without a key visitors get a free mock result labelled "demo"; with their own OpenAI key they get the real thing, charged to them. The server never stores a key.
 - **Cost transparency.** An estimate is shown before every generation, the real cost is computed from the API's `usage`, and there are no automatic retries.
 - **Privacy.** EXIF/GPS is stripped by re-encoding, images sit on a private disk behind short-lived signed URLs, and uploads are pruned after 24 h (results after 7 days).
+- **Accessible before/after slider.** A native range input over the image: drag, tap, arrow keys and screen readers work, and the result is shown only once it has loaded.
+
+## Roadmap
+
+Fitzaro Front is moving to the same try-on engine as the WordPress plugin 0.1.0:
+
+- **Catalogue:** tops, dresses and eyewear with colour/style variants, one prompt per product type. Tailoring (suits and fabrics) stays as a module behind a config flag.
+- **Who pays:** a store-owner key with a monthly budget, next to today's bring-your-own-key mode.
+- **Limits:** per visitor, IP address and site, checked before a job is queued.
+- **Owner controls and privacy:** an admin screen to turn try-on on or off per product and category, personal data export and erasure.
 
 ## Stack
 
@@ -58,8 +68,8 @@ app → pages → widgets → features → entities → shared
 Requirements: Docker Desktop and Node 24.
 
 ```
-git clone https://github.com/aurshax/boutique-ai.git
-cd boutique-ai
+git clone https://github.com/aurshax/boutique-ai.git fitzaro-front
+cd fitzaro-front
 cp .env.example .env
 docker run --rm -u "$(id -u):$(id -g)" -v "$(pwd):/var/www/html" -w /var/www/html laravelsail/php85-composer:latest composer install
 ./vendor/bin/sail up -d
@@ -100,3 +110,4 @@ See [`docs/DEPLOY.md`](docs/DEPLOY.md) and `.env.production.example`: an S3-comp
 - Photos and videos in `public/media/hero` and `public/media/fabrics/fabric-*`: [Unsplash License](https://unsplash.com/license) and [Pexels License](https://www.pexels.com/license/). Authors and sources are listed in [`public/media/CREDITS.md`](public/media/CREDITS.md). They are **not** covered by the MIT licence.
 - Catalogue product images and fabric swatches (`public/media/catalog`, `public/media/fabrics/swatch-*`) are AI-generated for this demo.
 - Built on the [Laravel Vue starter kit](https://github.com/laravel/vue-starter-kit) (MIT).
+- The WordPress plugin [aurshax/fitzaro](https://github.com/aurshax/fitzaro) is a separate project under GPL-2.0-or-later.

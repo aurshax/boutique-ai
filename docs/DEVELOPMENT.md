@@ -69,6 +69,20 @@ npm run types:check
 - `vp check` runs lint and format; `npx vp fmt` fixes formatting.
 - `types:check` runs `vue-tsc --noEmit`.
 
+## Screenshots and video
+
+`scripts/capture-screenshots.mjs` (Playwright) retakes the README images and the try-on video from a running app:
+
+```
+npx playwright install chromium
+PHOTO=path/to/full-length.jpg OPENAI_KEY=sk-... node scripts/capture-screenshots.mjs
+```
+
+- `PHOTO`: a licensed stock photo or an AI-generated model, never a real customer.
+- `OPENAI_KEY`: only with `TRYON_PROVIDER=openai`. The script puts it in the browser's sessionStorage, like the key form; each run makes two real generations (about $0.15).
+- `BASE_URL` (default `http://localhost`) and `OUT` (default `docs/screenshots`) are optional.
+- Output: `01-home.jpg` to `04-fabric-swap.jpg`, plus `05-try-on-flow.gif` and `.mp4` when ffmpeg is installed (otherwise `.webm`).
+
 ## Troubleshooting
 
 | Symptom                                                  | Cause                                                                 | Fix                                                                                                                                              |
