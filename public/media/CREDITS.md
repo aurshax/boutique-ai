@@ -21,7 +21,7 @@ These files are **not** covered by the project's MIT licence.
 
 ## README screenshots
 
-`docs/screenshots/` shows a real try-on of the Unsplash photo by Mohamad Khosravi (https://unsplash.com/photos/man-in-black-suit-jacket-and-black-pants-standing-on-gray-concrete-floor-during-daytime-vS0Kya7E5V4). The "after" images are AI edits of that photo made with the OpenAI Images API.
+`docs/screenshots/` shows a real try-on of an AI-generated model photo (not a real person). The "after" images are AI edits of that photo made with the OpenAI Images API.
 
 ## AI-generated (demo catalogue)
 

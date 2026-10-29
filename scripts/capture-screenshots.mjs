@@ -129,7 +129,7 @@ const browser = await chromium.launch();
     await page.close();
 }
 
-// 2–4. Setup, result and fabric swap, recorded as a video at the same time.
+// 2–4 and 6. Setup, waiting, result and fabric swap, recorded as a video at the same time.
 const videoDir = join(OUT, '_video');
 rmSync(videoDir, { recursive: true, force: true });
 const context = await browser.newContext({
@@ -147,6 +147,8 @@ await shot(page, '02-choose-look.jpg');
 await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
 await page.getByRole('button', { name: /Dress me/ }).click();
+await pause(page, 2200);
+await shot(page, '06-waiting.jpg');
 await waitForResult(page);
 await sweep(page, 0.5, 0.15);
 await sweep(page, 0.15, 0.85, 45);

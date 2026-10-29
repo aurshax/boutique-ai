@@ -6,11 +6,11 @@ The demo is set up for a menswear shop: suits, separates, accessories and seven 
 
 ![Try-on flow: choose a look, wait for the AI, compare before and after, swap the fabric](docs/screenshots/05-try-on-flow.gif)
 
-| Choose a look and fabric                              | Result with size and price                | Same photo, another fabric                          |
-| ----------------------------------------------------- | ----------------------------------------- | --------------------------------------------------- |
-| ![Choose a look](docs/screenshots/02-choose-look.jpg) | ![Result](docs/screenshots/03-result.jpg) | ![Fabric swap](docs/screenshots/04-fabric-swap.jpg) |
+| Choose a look and fabric                              | The AI at work                              | Result with size and price                | Same photo, another fabric                          |
+| ----------------------------------------------------- | ------------------------------------------- | ----------------------------------------- | --------------------------------------------------- |
+| ![Choose a look](docs/screenshots/02-choose-look.jpg) | ![Waiting](docs/screenshots/06-waiting.jpg) | ![Result](docs/screenshots/03-result.jpg) | ![Fabric swap](docs/screenshots/04-fabric-swap.jpg) |
 
-These come from a real run against the OpenAI Images API, about $0.07 per image. The model photo is from Unsplash ([credits](public/media/CREDITS.md)).
+These come from a real run against the OpenAI Images API, about $0.07 per image. The model in the photo is AI-generated, not a real person.
 
 ## What's in it
 
